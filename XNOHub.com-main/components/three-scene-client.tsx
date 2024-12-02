@@ -356,7 +356,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           onNodeHover={setHoveredNode}
         />
         <CloudMesh />
-
+        
         {/* Always render StarlinkMesh */}
         <StarlinkMesh
           count={6}
