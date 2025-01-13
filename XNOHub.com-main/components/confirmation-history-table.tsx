@@ -49,21 +49,24 @@ export const ConfirmationHistoryTable: React.FC<
 
   return (
     <div className="space-y-4 w-full md:w-auto pointer-events-none select-none">
-      <div className="flex justify-end items-center gap-2 pointer-events-auto">
+      <div className="flex justify-end gap-2 pointer-events-auto">   
         <Button
-          onClick={toggleRowCount}
+          onClick={toggleView}
           variant="outline"
           size="sm"
-          className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9] md:hidden"
+          className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
         >
-          {showLessRows ? (
-            <ChevronDown className="w-4 h-4" />
+          {isFullView ? (
+            <>
+              <Minimize2 className="w-4 h-4" />
+              <span className="hidden md:inline">Min View</span>
+            </>
           ) : (
-            <ChevronUp className="w-4 h-4" />
+            <>
+              <Maximize2 className="w-4 h-4" />
+              <span className="hidden md:inline">Full View</span>
+            </>
           )}
-          <span className="hidden md:inline">
-            {showLessRows ? 'Show More' : 'Show Less'}
-          </span>
         </Button>
         <Button
           onClick={toggleView}
