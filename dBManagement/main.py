@@ -1,8 +1,12 @@
 import psycopg2
-from password import key
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+POSTGRESQL_PASSWORD = os.getenv('POSTGRESQL_PASSWORD')
 
 conn = psycopg2.connect(host="localhost", dbname="postgres", user="postgres",
-                        password=key, port=5432)
+                        password=POSTGRESQL_PASSWORD, port=5432)
 
 cur = conn.cursor()
 # do something
