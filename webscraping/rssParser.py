@@ -1,3 +1,5 @@
+
+
 CountryName = "us"
 
 rss_url = f"https://news.google.com/rss/search?q={CountryName}"
@@ -31,5 +33,8 @@ class RssUrlParser:
     def __init__(self, country):
         self.country = country
         self.rssLink = f"https://news.google.com/rss/search?q={self.country}"
+    
+    def printCountry(self):
+        print(self.country)
 
     
