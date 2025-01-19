@@ -1,4 +1,6 @@
-rss_url = "https://news.google.com/rss/search?q={us}"
+CountryName = "us"
+
+rss_url = f"https://news.google.com/rss/search?q={CountryName}"
 
 import feedparser
 
@@ -15,11 +17,19 @@ print("\nItems:")
 count = 0
 # Loop through each entry (RSS item)
 for entry in feed.entries:
+    print(f"Link: {entry.published}")
     """
     print(f"Title: {entry.title}")
     print(f"Link: {entry.link}")
     print(f"Description: {entry.description}")
     print(f"Published: {entry.published}\n")
     """
-    count +=1
-print(count)
+    
+
+class RssUrlParser:
+    
+    def __init__(self, country):
+        self.country = country
+        self.rssLink = f"https://news.google.com/rss/search?q={self.country}"
+
+    
