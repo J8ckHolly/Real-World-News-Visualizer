@@ -7,12 +7,12 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 client = OpenAI()
-
+text = "hi"
 completion = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Write a haiku about recursion in programming."}
+        {"role": "user", "content": f"Please summarize the following text in less than 100 words:\n\n{text}"}
     ]
 )
 

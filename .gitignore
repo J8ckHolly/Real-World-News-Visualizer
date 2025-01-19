@@ -1,2 +1,4 @@
-./dBManagement/password.py
-./webscraping/.env
+/webscraping/.env
+.env
+__pycache__/
+*.pyc
