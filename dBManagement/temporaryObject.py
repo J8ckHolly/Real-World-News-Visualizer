@@ -1,4 +1,6 @@
-
+import psycopg2
+from psycopg2 import sql
+from InitializeDB import load_db_password
 
 CountryName = "us"
 
@@ -29,13 +31,37 @@ def parse_rss_feed():
     
 
 class RssUrlParser:
+
+    insert_query = """
+    INSERT INTO article (url, time, country)
+    VALUES (%s, %s, %s)
+    ON CONFLICT (url) DO NOTHING  -- Skip if URL already exists
+    """
     
     def __init__(self, country):
         self.country = country
         self.rssLink = f"https://news.google.com/rss/search?q={self.country}"
+        self.conn = None
+        self.POSTGRESQL_PASSWORD = load_db_password()
+
+    def connect(self):
+        self.conn = psycopg2.connect(host="localhost",
+                                dbname="postgres",
+                                user="postgres",
+                                password=self.POSTGRESQL_PASSWORD, port=5432)
     
     def printCountry(self):
         print(self.country)
+    
+    def Parse_rSS():
+        pass
+        #Check to make sure URL Length is not longer than 255
+
+    def add_article():
+        pass
+
+    def __del__(self):
+        pass
 
 
 if __name__ == "__main__":
