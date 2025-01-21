@@ -25,7 +25,7 @@ def initialize_system_tables():
     createArticleTable = """
     CREATE TABLE IF NOT EXISTS article (
         article_id SERIAL PRIMARY KEY,
-        url VARCHAR(255),
+        url VARCHAR(255) UNIQUE,
         time TIMESTAMP,
         country VARCHAR(255)
     );
