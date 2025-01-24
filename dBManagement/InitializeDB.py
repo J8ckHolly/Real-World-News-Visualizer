@@ -100,4 +100,6 @@ def initialize_system_tables():
             conn.close()
 
 
-initialize_system_tables()
+if __name__ == "__main__":
+    load_db_password()
+    initialize_system_tables()  # This will only run if this file is executed directly
