@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2 import sql
 from InitializeDB import load_db_password
-
+import feedparser
 CountryName = "us"
 
 rss_url = f"https://news.google.com/rss/search?q={CountryName}"
@@ -41,27 +41,42 @@ class RssUrlParser:
     def __init__(self, country):
         self.country = country
         self.rssLink = f"https://news.google.com/rss/search?q={self.country}"
-        self.conn = None
         self.POSTGRESQL_PASSWORD = load_db_password()
-
-    def connect(self):
-        self.conn = psycopg2.connect(host="localhost",
-                                dbname="postgres",
-                                user="postgres",
-                                password=self.POSTGRESQL_PASSWORD, port=5432)
+        self.connection = None
+        self.cursor = None
+        self.connect_to_dB()
     
-    def printCountry(self):
+    def print_country(self):
         print(self.country)
     
-    def Parse_rSS():
-        pass
-        #Check to make sure URL Length is not longer than 255
+    def connect_to_dB(self):
+        try:
+            self.connection = psycopg2.connect(host="localhost",
+                            dbname="postgres",
+                            user="postgres",
+                            password= self.POSTGRESQL_PASSWORD,
+                            port=5432)
+        except psycopg2.Error as e:
+            print(f"Error: {e}")
+        self.cursor = self.connection.cursor()
+
+    
+    def Parse_rSS(self):
+        
+            #Check to make sure URL Length is not longer than 255
+            feed = feedparser.parse(rss_url)
 
     def add_article():
         pass
 
+    def printCountry(self):
+        print(self.country)
+
     def __del__(self):
-        pass
+        if self.cursor:
+            self.cursor.close()
+        if self.connection:
+            self.connection.close()
 
 
 if __name__ == "__main__":
