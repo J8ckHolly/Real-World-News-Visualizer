@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2 import sql
-from InitializeDB import load_db_password
+from dBManagement.BackUp.InitializeDB import load_db_password
 import feedparser
 CountryName = "us"
 
