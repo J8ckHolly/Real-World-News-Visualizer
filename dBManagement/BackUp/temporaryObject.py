@@ -22,12 +22,9 @@ def parse_rss_feed():
     # Loop through each entry (RSS item)
     for entry in feed.entries:
         print(f"Link: {entry.published}")
-        """
-        print(f"Title: {entry.title}")
         print(f"Link: {entry.link}")
-        print(f"Description: {entry.description}")
-        print(f"Published: {entry.published}\n")
-        """
+        print(f"Published: {entry.published}\n") #Time
+        
     
 
 class RssUrlParser:
@@ -46,37 +43,12 @@ class RssUrlParser:
         self.cursor = None
         self.connect_to_dB()
     
-    def print_country(self):
-        print(self.country)
-    
-    def connect_to_dB(self):
-        try:
-            self.connection = psycopg2.connect(host="localhost",
-                            dbname="postgres",
-                            user="postgres",
-                            password= self.POSTGRESQL_PASSWORD,
-                            port=5432)
-        except psycopg2.Error as e:
-            print(f"Error: {e}")
-        self.cursor = self.connection.cursor()
-
-    
     def Parse_rSS(self):
         
             #Check to make sure URL Length is not longer than 255
             feed = feedparser.parse(rss_url)
 
-    def add_article():
-        pass
 
-    def printCountry(self):
-        print(self.country)
-
-    def __del__(self):
-        if self.cursor:
-            self.cursor.close()
-        if self.connection:
-            self.connection.close()
 
 
 if __name__ == "__main__":

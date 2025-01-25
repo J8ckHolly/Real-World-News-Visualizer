@@ -38,7 +38,7 @@ class TableCreation(DatabaseCoreComponent):
         createArticleTable = """
         CREATE TABLE IF NOT EXISTS article (
             article_id SERIAL PRIMARY KEY,
-            url VARCHAR(255) UNIQUE,
+            link TEXT UNIQUE,
             time TIMESTAMP,
             country VARCHAR(255)
         );
@@ -71,7 +71,14 @@ class TableCreation(DatabaseCoreComponent):
             CONSTRAINT fk_article_gpt_id FOREIGN KEY (article_gpt_id) REFERENCES article (article_id)
         );
         """
-        self.Tables = [createArticleTable, createArticleDescriptionTable,  createRankedEventsTable]
+
+        createDuplicateTable = """
+        CREATE TABLE Duplicate_Table (
+            link TEXT UNIQUE,
+            country VARCHAR(255)
+        );
+        """
+        self.Tables = [createArticleTable, createArticleDescriptionTable,  createRankedEventsTable, createDuplicateTable]
 
 
 
