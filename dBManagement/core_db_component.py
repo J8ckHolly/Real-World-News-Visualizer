@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 import time
+import logging
 
 """
 Filename: core_db_component.py
@@ -40,12 +41,16 @@ class DatabaseCoreComponent():
             file_path = r'.\webscraping\.env'
             load_dotenv(dotenv_path=file_path)
             POSTGRESQL_PASSWORD = os.getenv('POSTGRESQL_PASSWORD')
+            logging.info("Successfully loaded password in DatabaseCC")
             if POSTGRESQL_PASSWORD is None:
+                logging.error("POSTGRESQL_PASSWORD environment variable is not found")
                 raise ValueError("POSTGRESQL_PASSWORD environment variable is not found")
             return POSTGRESQL_PASSWORD
         except FileNotFoundError:
+            logging.error(f"Error: The file at {file_path} was not found.")
             print(f"Error: The file at {file_path} was not found.")
         except ValueError as ve:
+            logging.error(f"Error: In Loading password error")
             print(f"Error: {ve}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
@@ -65,7 +70,7 @@ class DatabaseCoreComponent():
                 return None
             
             self.conn = psycopg2.connect(**self.connection_fields)
-            print("Connection established!")
+            logging.info("Connection established!")
         except psycopg2.Error as e:
             print(f"Error: {e}")
             self.conn = None  # Set conn to None if connection fails
@@ -74,9 +79,9 @@ class DatabaseCoreComponent():
         if self.conn:
             self.conn.close()
             self.conn = None
-            print("Connection closed.")
+            logging.info("Connection closed.")
         else:
-            print("No connection to close.")
+            logging.info("No connection to close.")
     
     def __del__(self):
         # Destructor will call close_connection

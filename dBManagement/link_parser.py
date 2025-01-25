@@ -2,6 +2,7 @@ from core_db_component import DatabaseCoreComponent
 import datetime
 from datetime import datetime
 import feedparser
+import logging
 
 """
 Filename: table_creation.py
@@ -22,7 +23,7 @@ class RssParser(DatabaseCoreComponent):
         self.country = country
         self.rss_link = f"https://news.google.com/rss/search?q={self.country}"
         self.get_rss()
-        print("Created Successfully")
+        logging.info(f"{self.country} Parser Created Successfully")
 
     def get_rss(self):
         self.feed = feedparser.parse(self.rss_link)
@@ -59,20 +60,23 @@ class RssParser(DatabaseCoreComponent):
 
                 cur.execute(check_article_table, (entry.link, self.country))
                 if cur.fetchone():
+                    logging.info(f"Link blocked in {self.country} Parser-Duplicate AT")
                     continue  # Skip if link-country combination already exists in 'article'
                 
                 # Check if the link and country combination already exists in 'duplicate_article'
                 cur.execute(check_duplicate_table, (entry.link, self.country))
                 if cur.fetchone():
+                    logging.info(f"Link blocked in {self.country} Parser-Duplicate DT")
                     continue  # Skip if link-country combination already exists in 'duplicate_article'
-
+                    
                 cur.execute(insert_tuple, (entry.link, 
                             self.convert_to_timestamp(entry.published),
                             self.country))
+                logging.info(f"Link Added in {self.country} Parser")
             self.conn.commit()
 
         except Exception as error:
-            print("Error while interacting with the database:", error)
+            logging.error("Error while interacting with the database:", error)
         finally:
             if cur:
                 cur.close()
@@ -88,7 +92,7 @@ class RssParser(DatabaseCoreComponent):
             cur.execute(delete_data)
             self.conn.commit()
         except Exception as error:
-            print("Error while interacting with the database:", error)
+            logging.error("Error while interacting with the database:", error)
         finally:
             if cur:
                 cur.close()
