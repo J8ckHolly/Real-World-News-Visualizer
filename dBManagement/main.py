@@ -1,6 +1,6 @@
-from temporaryObject import RssUrlParser
+from core_db_component import DatabaseCoreComponent
+from table_creation import TableCreation
+from table_deletion import TableDeletion
 
-
-USParser = RssUrlParser("United States")
-USParser.printCountry()
-
+#systemInit = TableCreation()
+systemDelete = TableDeletion()
