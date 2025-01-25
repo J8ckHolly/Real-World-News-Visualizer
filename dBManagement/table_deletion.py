@@ -1,5 +1,6 @@
 from core_db_component import DatabaseCoreComponent
 from psycopg2 import sql
+import logging
 
 """
 Filename: table_creation.py
@@ -40,14 +41,14 @@ class TableDeletion(DatabaseCoreComponent):
                     sql.Identifier(table_name)
                 )
                 cur.execute(drop_query)
-                print(f"Dropped table {table_name}")
+                logging.info(f"Dropped table {table_name}")
 
             # Commit the changes
             self.conn.commit()
-            print("All tables Deleted")
+            logging.info("All tables Deleted")
 
         except Exception as error:
-            print("Error while interacting with the database:", error)
+            logging.info("Error while interacting with the database:", error)
         finally:
             if cur:
                 cur.close()

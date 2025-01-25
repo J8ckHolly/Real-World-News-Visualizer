@@ -1,5 +1,5 @@
 from core_db_component import DatabaseCoreComponent
-
+import logging
 """
 Filename: table_creation.py
 
@@ -26,9 +26,9 @@ class TableCreation(DatabaseCoreComponent):
             for table in self.Tables:
                 cur.execute(table)
             self.conn.commit()
-            print("Created Tables")
+            logging.info("Created Tables")
         except Exception as error:
-            print("Error while interacting with the database:", error)
+            logging.error("Error while interacting with the database:", error)
         finally:
             if cur:
                 cur.close()

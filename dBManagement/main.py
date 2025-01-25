@@ -2,6 +2,19 @@ from core_db_component import DatabaseCoreComponent
 from table_creation import TableCreation
 from table_deletion import TableDeletion
 from link_parser import RssParser
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log'),  # Log to file 'app.log'
+        logging.StreamHandler()          # Optionally also log to console
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
 
 systemDelete = TableDeletion()
 systemInit = TableCreation()
