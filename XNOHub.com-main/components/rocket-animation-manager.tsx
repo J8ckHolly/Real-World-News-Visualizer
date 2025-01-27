@@ -55,7 +55,7 @@ const RocketAnimationManager = forwardRef<
         startTime: Date.now()
       };
       setRockets((prevRockets) => [...prevRockets, newRocket]);
-    }, []);
+    }, []); //Kinda Understand until here
 
     const removeRocket = useCallback(
       (id: string) => {

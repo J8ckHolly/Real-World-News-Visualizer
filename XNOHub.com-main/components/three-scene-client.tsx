@@ -15,22 +15,20 @@ import {
   Stats
 } from '@react-three/drei';
 import * as THREE from 'three';
-import { IRepData } from '@/types/index';
+import { IRepData } from '@/types/index'; 
 import ThreeMesh from '@/components/three-mesh';
 import { CloudMesh } from '@/components/three-cloud-mesh';
-import { ConfirmationHistoryTable } from '@/components/confirmation-history-table';
-import { DonationImagePopover } from '@/components/donation-image-popover';
-import { useConfirmations } from '@/providers/confirmation-provider';
-import { DonationAnimation } from '@/components/donation-animation';
-import { parseNanoAmount } from '@/lib/parse-nano-amount';
+import { ConfirmationHistoryTable } from '@/components/confirmation-history-table'; //Eventually -Understand
+import { useConfirmations } from '@/providers/confirmation-provider'; //Eventually - Understand
+import { parseNanoAmount } from '@/lib/parse-nano-amount';//Eventually - Understand
 import { Vector3 } from 'three';
-import { scaleRocketCount } from '@/lib/scale-rocket-count';
+//import { scaleRocketCount } from '@/lib/scale-rocket-count';// Kill
 import { Button } from '@/components/ui/button';
-import { Rocket, Eye, Globe } from 'lucide-react';
-import RocketAnimationManager from '@/components/rocket-animation-manager';
-import { APP_CONFIG } from '@/constants/config';
-import { StarlinkMesh } from '@/components/starlink-mesh';
-import { RocketViewText } from '@/components/rocket-view-text';
+import { Rocket, Eye, Globe } from 'lucide-react'; // Understand
+//import RocketAnimationManager from '@/components/rocket-animation-manager'; //Kill
+import { APP_CONFIG } from '@/constants/config'; //Understand - Keep
+import { StarlinkMesh } from '@/components/starlink-mesh'; //Kill -understand
+
 
 function getRandomPositionOnGlobe(radius: number = 1.2): Vector3 {
   const phi = Math.random() * Math.PI * 2;
@@ -132,18 +130,6 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           (window as any).triggerDonationAnimation(amount);
         }
       }
-
-      if (isSend) {
-        const newRocketCount = Math.max(
-          scaleRocketCount(amount),
-          rocketCount === 0 ? 1 : 0
-        );
-
-        for (let i = 0; i < newRocketCount; i++) {
-          const randomPosition = getRandomPositionOnGlobe();
-          rocketManagerRef.current?.addRocket(randomPosition);
-        }
-      }
     }
   }, [confirmations]);
 
@@ -233,12 +219,12 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     <div className="relative w-screen h-screen">
       <div className="absolute top-1 md:top-4 left-4 md:left-10 z-10 flex-col select-none">
         <span className="text-[30px] md:text-[40px] font-thin font-sans text-[#209ce9]">
-          ӾNO
-        </span>
+          ӾNO {/*This is where the title is*/}
+        </span> 
         <span className="text-[30px] md:text-[40px] text-gray-200">Hub</span>
       </div>
 
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2"> {/*Get ride of */}
         <div className="flex flex-row gap-2">
           {/* New button to reset to Earth view */}
           {distanceFromEarth > 10 && (
@@ -320,7 +306,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           Active <Rocket className="w-4 h-4 text-red-600" /> {rocketCount}
         </div>
         <ConfirmationHistoryTable />
-      </div>
+      </div> {/*Get ride of */}
 
       <Canvas
         camera={cameraSettings}
@@ -357,17 +343,17 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
         />
         <CloudMesh />
         
-        {/* Always render StarlinkMesh */}
+        {/* Always render StarlinkMesh 
         <StarlinkMesh
           count={6}
           isStarlinkView={isStarlinkView}
           activeStarlinkIndex={activeStarlinkIndex}
           cameraRef={cameraRef}
-        />
+        />*/}
 
-        <DonationAnimation />
+        {/*<DonationAnimation />*/}
 
-        <RocketAnimationManager
+        {/*<RocketAnimationManager
           ref={rocketManagerRef}
           cameraRef={cameraRef}
           onRocketComplete={handleRocketComplete}
@@ -376,13 +362,10 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           activeRocketIndex={activeRocketIndex}
           setActiveRocketIndex={setActiveRocketIndex}
           setDistanceFromEarth={setDistanceFromEarth}
-        />
+        />*/}
       </Canvas>
 
-      {/* Donation Image Popover */}
-      <div className="absolute bottom-6 right-6 z-10">
-        <DonationImagePopover />
-      </div>
+      
 
       {/* Node Info */}
       <div className="absolute bottom-4 left-4 z-10">
@@ -397,13 +380,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           </div>
         )}
       </div>
-
-      {isRocketView && (
-        <RocketViewText
-          distanceFromEarth={distanceFromEarth}
-          EarthRadiusInKm={EarthRadiusInKm}
-        />
-      )}
+      
     </div>
   );
 };
