@@ -35,6 +35,9 @@ class Node:
     def is_visited(self):
         self.visits += 1
     
+    def reset(self):
+        self.visits = 0
+    
     def __str__(self):
         print(self.return_name())
     
@@ -111,6 +114,9 @@ class WeightedGraph:
         #Right now do it the slow way of incrementing through and seeing what the highest value is
         #In future optomise this
         print("The winner is: "+ max(self.nodes, key=lambda node: self.nodes[node].visits))
+        for node in self.nodes:
+            node.reset()
+
 
     def display_graph(self):
         if (not self.try_graph):
