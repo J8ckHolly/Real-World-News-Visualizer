@@ -83,10 +83,21 @@ class WeightedGraph:
     def get_random_node(self):
         return self.nodes[random.choice(list(self.nodes))]
 
+    def convert_matrix_to_graph(self, matrix):
+        #Add Nodes
+        refrenceToArticle = len(matrix)
+        for element in range(refrenceToArticle):
+            self.add_node(str(element))
+        for i in range(refrenceToArticle):
+            for j in range(i + 1, refrenceToArticle):
+                if matrix[i][j] == 0:
+                    continue
+                self.add_edge(str(i),str(j), matrix[i][j])
+        
     def page_ranking_algorithm(self):
         currentNode = self.get_random_node()
         dampingFactor = .85
-        iterations = 50
+        iterations = 2000
         count = 0
         while count < iterations:
             if random.random() > dampingFactor:
@@ -114,8 +125,8 @@ class WeightedGraph:
         #Right now do it the slow way of incrementing through and seeing what the highest value is
         #In future optomise this
         print("The winner is: "+ max(self.nodes, key=lambda node: self.nodes[node].visits))
-        for node in self.nodes:
-            node.reset()
+        #for node in self.nodes:
+            #node.reset() -- have to come back to this
 
 
     def display_graph(self):
@@ -127,16 +138,16 @@ class WeightedGraph:
             pos = nx.spring_layout(self.G)
 
             # Draw the nodes and edges with labels
-            nx.draw(self.G, pos, with_labels=True, node_size=3000, node_color="lightblue", font_size=15)
+            nx.draw(self.G, pos, with_labels=True, node_size=300, node_color="lightblue", font_size=8)
 
             # Draw edge labels for weights
-            edge_labels = nx.get_edge_attributes(self.G, 'weight')
-            nx.draw_networkx_edge_labels(self.G, pos, edge_labels=edge_labels)
+            #edge_labels = nx.get_edge_attributes(self.G, 'weight')
+            #nx.draw_networkx_edge_labels(self.G, pos, edge_labels=edge_labels, font_size=2)
 
             # Show the plot
             plt.show()
 
-
+"""
 graph = WeightedGraph()
 
 # Add nodes to the graph
@@ -152,7 +163,7 @@ graph.get_random_node()
 graph.page_ranking_algorithm()
 graph.display_graph()
 #graph.page_ranking_algorithm()
-
+"""
 
 
     

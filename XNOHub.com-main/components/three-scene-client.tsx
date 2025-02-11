@@ -30,6 +30,7 @@ import { APP_CONFIG } from '@/constants/config'; //Understand - Keep
 import { StarlinkMesh } from '@/components/starlink-mesh'; //Kill -understand
 
 
+
 function getRandomPositionOnGlobe(radius: number = 1.2): Vector3 {
   const phi = Math.random() * Math.PI * 2;
   const theta = Math.acos(Math.random() * 2 - 1);
@@ -40,6 +41,37 @@ function getRandomPositionOnGlobe(radius: number = 1.2): Vector3 {
 
   return new Vector3(x, y, z);
 }
+
+const calculatePosition = (
+  lat: number,
+  long: number,
+  radius: number
+): THREE.Vector3 => {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (long + 180) * (Math.PI / 180);
+  const x = -radius * Math.sin(phi) * Math.cos(theta);
+  const y = radius * Math.cos(phi);
+  const z = radius * Math.sin(phi) * Math.sin(theta);
+  return new THREE.Vector3(x, y, z);
+}; 
+
+const calculatePolarCoordinates = (
+  x: number, 
+  y: number, 
+  z: number
+ ): THREE.Vector3 => {
+  const radius = Math.sqrt(x * x + y * y + z * z); // Calculate the radial distance
+  
+  const theta = Math.atan2(y, x); // Azimuthal angle (in radians) in the XY-plane
+  
+  const psi = Math.acos(z / radius); // Polar angle (in radians) from the Z-axis
+  
+  return new THREE.Vector3(radius, theta, psi);
+};
+
+const getCameraPolarPos = () => {return;}; //Depent on hoverNode
+const calculateNodePolarPos = () => {return;} //Depent on hoverNode 
+
 
 interface ThreeSceneClientProps {
   repsGeoInfo: IRepData[];
@@ -58,6 +90,9 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   const [hoveredNode, setHoveredNode] = useState<IRepData | null>(null);
   const { confirmationHistory: confirmations } = useConfirmations();
   const [launchQueue, setLaunchQueue] = useState<Vector3[]>([]);
+  const [NodePos, setNodePos] = useState<THREE.Vector3>(new THREE.Vector3());
+  const [NodePosPolar, setNodePosPolar] = useState<THREE.Vector3>(new THREE.Vector3());
+  const [hoverNodePol, setHoverNodePol] = useState<THREE.Vector3>(new THREE.Vector3());
   const [isRocketView, setIsRocketView] = useState(false);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const [activeRocketIndex, setActiveRocketIndex] = useState<number | null>(
@@ -72,15 +107,26 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   const [activeStarlinkIndex, setActiveStarlinkIndex] = useState<number | null>(
     null
   );
+  
+  useEffect(() =>{
+  if (hoveredNode) {
+    setNodePos(calculatePosition(hoveredNode.latitude, hoveredNode.longitude, 1));
+    setNodePosPolar(calculatePolarCoordinates(NodePos.x, NodePos.y, NodePos.z));
+  }
+}, [hoveredNode]
+  );
 
-  const toggleRocketView = useCallback(() => {
-    setIsRocketView((prev) => !prev);
-    if (!isRocketView && rocketCount > 0) {
-      setActiveRocketIndex(0);
-    } else {
-      setActiveRocketIndex(null);
-    }
-  }, [rocketCount, isRocketView]);
+  useEffect(() =>{
+    if(cameraRef.current){
+    setHoverNodePol(calculatePolarCoordinates(cameraRef.current.position.x,
+      cameraRef.current.position.y,
+      cameraRef.current.position.z
+    ))
+  }
+  }, [hoveredNode]
+  );
+
+
 
   const moveToNextRocket = useCallback(() => {
     if (isRocketView && rocketCount > 0) {
@@ -116,22 +162,6 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     }
   }, [serverDateTime]);
 
-  useEffect(() => {
-    const latestConfirmation = confirmations[0];
-    if (latestConfirmation) {
-      const isDonation =
-        latestConfirmation.message.block.link_as_account ===
-        APP_CONFIG.donations.nano;
-      const amount = parseNanoAmount(latestConfirmation.message.amount);
-      const isSend = latestConfirmation.message.block.subtype === 'send';
-      if (isDonation) {
-        // Trigger existing donation animation
-        if ((window as any).triggerDonationAnimation) {
-          (window as any).triggerDonationAnimation(amount);
-        }
-      }
-    }
-  }, [confirmations]);
 
   const handleRocketComplete = (id: string) => {
     setRocketCount((prevCount) => prevCount - 1);
@@ -150,6 +180,34 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
       setActiveRocketIndex(0); // Set the first rocket as active only if it's null
     }
   }, [launchQueue, activeRocketIndex]); // Add activeRocketIndex to dependencies
+
+  const lookAtNode = useCallback((node: IRepData) => {
+    if (cameraRef.current) {
+      // Adjust the camera's position slightly so it's not inside the node
+      /*
+      const offset = EarthRadiusInKm + 50; // Distance from the node
+      const targetPosition = new THREE.Vector3(node.latitude, node.longitude, 0);
+      const cameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y, offset);
+      const currentCameraPosition = cameraRef.current.position.clone();
+      const direction = targetPosition.clone().sub(currentCameraPosition).normalize();
+      const lerpSpeed = 0.1; // Adjust this value to control how fast the camera moves
+      cameraRef.current.position.lerp(cameraPosition, lerpSpeed);
+      const lookAtRotation = new THREE.Quaternion().setFromUnitVectors(
+        cameraRef.current.getWorldDirection(new THREE.Vector3()).normalize(), // Current camera direction
+        direction // Desired direction (towards the node)
+      );
+      cameraRef.current.quaternion.slerp(lookAtRotation, lerpSpeed);
+      cameraRef.current.lookAt(targetPosition);
+      cameraRef.current.lookAt(0, 0, 0); // Make the camera look at the node
+      */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hoveredNode) {
+      lookAtNode(hoveredNode);
+    }
+  }, [hoveredNode, lookAtNode]);
 
   // New function to reset to Earth view
   const resetToEarthView = () => {
@@ -237,33 +295,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
               Back to Earth
             </Button>
           )}
-          <Button
-            onClick={toggleStarlinkView}
-            variant="outline"
-            size="sm"
-            className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
-          >
-            {isStarlinkView ? (
-              <Globe className="w-4 h-4 text-blue-400" />
-            ) : (
-              <svg
-                className="w-4 h-4 text-blue-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0-11V3"
-                />
-              </svg>
-            )}
-            <span className="hidden md:inline">
-              {isStarlinkView ? 'Earth View' : 'StarLink View'}
-            </span>
-          </Button>
+          
           {isStarlinkView && (
             <Button
               onClick={moveToNextStarlink}
@@ -275,21 +307,6 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
               <span className="hidden md:inline">Next StarLink</span>
             </Button>
           )}
-          <Button
-            onClick={toggleRocketView}
-            variant="outline"
-            size="sm"
-            className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
-          >
-            {isRocketView ? (
-              <Globe className="w-4 h-4 text-blue-400" />
-            ) : (
-              <Rocket className="w-4 h-4 text-red-600" />
-            )}
-            <span className="hidden md:inline text-center">
-              {isRocketView ? 'Abort Mission' : 'Rocket View'}
-            </span>
-          </Button>
           {isRocketView && (
             <Button
               onClick={moveToNextRocket}
@@ -364,22 +381,58 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           setDistanceFromEarth={setDistanceFromEarth}
         />*/}
       </Canvas>
-
-      
-
       {/* Node Info */}
-      <div className="absolute bottom-4 left-4 z-10">
-        {hoveredNode && (
+      <div className="absolute bottom-1/2 left-4 z-10">
+        {cameraRef.current && (
           <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
-            <h3 className="text-lg font-bold mb-2">
-              {hoveredNode.account_formatted ||
-                hoveredNode.alias ||
-                'Unknown Node'}
-            </h3>
-            <p>Weight: {hoveredNode.weight_formatted}</p>
+            <h3 className="text-lg font-bold mb-2"> Node Position Cart:</h3>
+            <p>X: {NodePos.x}</p>
+            <p>Y: {NodePos.y}</p>
+            <p>Z: {NodePos.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
           </div>
         )}
       </div>
+
+      {/* Node Info */}
+      <div className="absolute bottom-1/3 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Node Position Polar:</h3>
+            <p>Radians: {NodePosPolar.x}</p>
+            <p>Theta: {NodePosPolar.y}</p>
+            <p>Psi: {NodePosPolar.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>
+
+      {/* Node Info */}
+      <div className="absolute bottom-40 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Camera Position Polar:</h3>
+            <p>Radians: {hoverNodePol.x}</p>
+            <p>Theta: {hoverNodePol.y}</p>
+            <p>Psi: {hoverNodePol.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>
+
+      {/* Node Info */}
+      <div className="absolute bottom-4 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Camera Position Cart:</h3>
+            <p>X: {cameraRef.current.position.x}</p>
+            <p>Y: {cameraRef.current.position.y}</p>
+            <p>Z: {cameraRef.current.position.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>
+      
       
     </div>
   );
