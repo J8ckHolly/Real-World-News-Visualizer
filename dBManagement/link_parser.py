@@ -2,6 +2,7 @@ from core_db_component import DatabaseCoreComponent
 import datetime
 from datetime import datetime
 import feedparser
+import re
 import logging
 
 """
@@ -36,16 +37,15 @@ class RssParser(DatabaseCoreComponent):
     
     def insert_entry(self):
         insert_tuple = """
-            INSERT INTO article (link, time, country)
-            VALUES (%s, %s, %s)
+            INSERT INTO article (ref, time, country, Title)
+            VALUES (%s, %s, %s, %s)
         """
-        check_article_table = """
-            SELECT 1 FROM article WHERE link = %s AND country = %s
+        check_existence = """
+            SELECT 1 FROM article WHERE ref = %s
+            UNION
+            SELECT 1 FROM dead_article WHERE ref = %s
         """
 
-        check_duplicate_table = """
-            SELECT 1 FROM Duplicate_Table WHERE link = %s AND country = %s
-        """
 
         self.create_connection()
         cur = self.conn.cursor()
@@ -53,26 +53,28 @@ class RssParser(DatabaseCoreComponent):
             current_time = datetime.now()
 
             for entry in self.feed.entries:
+                ref = entry.link
+                cleaned_title = re.sub(r'[^\x00-\x7F]+', '', entry.title)
+                hyphen_index = cleaned_title.rfind(' -')
+                if hyphen_index != -1:
+                    cleaned_title = cleaned_title[:hyphen_index]
                 entry_time = self.convert_to_timestamp(entry.published)
 
+                # Skip entries older than 3 days
                 if (current_time - entry_time).days > 3:
-                    continue  # Skip this entry as it's older than 3 days. Also check back later for GMT Conversion
+                    logging.info(f"Skipping old article: ({entry_time})")
+                    continue  
 
-                cur.execute(check_article_table, (entry.link, self.country))
+                # Check if ref already exists in article or dead_article
+                cur.execute(check_existence, (ref, ref))
                 if cur.fetchone():
-                    logging.info(f"Link blocked in {self.country} Parser-Duplicate AT")
-                    continue  # Skip if link-country combination already exists in 'article'
-                
-                # Check if the link and country combination already exists in 'duplicate_article'
-                cur.execute(check_duplicate_table, (entry.link, self.country))
-                if cur.fetchone():
-                    logging.info(f"Link blocked in {self.country} Parser-Duplicate DT")
-                    continue  # Skip if link-country combination already exists in 'duplicate_article'
-                    
-                cur.execute(insert_tuple, (entry.link, 
-                            self.convert_to_timestamp(entry.published),
-                            self.country))
-                logging.info(f"Link Added in {self.country} Parser")
+                    logging.info(f"Link blocked in {self.country} Parser - Already Exists")
+                    continue  # Skip insertion if ref is already in one of the tables
+
+                # Insert if unique and within the time limit
+                cur.execute(insert_tuple, (ref, entry_time, self.country, cleaned_title))
+                logging.info(f"Link added in {self.country} Parser")
+
             self.conn.commit()
 
         except Exception as error:

@@ -20,14 +20,10 @@ import ThreeMesh from '@/components/three-mesh';
 import { CloudMesh } from '@/components/three-cloud-mesh';
 import { ConfirmationHistoryTable } from '@/components/confirmation-history-table'; //Eventually -Understand
 import { useConfirmations } from '@/providers/confirmation-provider'; //Eventually - Understand
-import { parseNanoAmount } from '@/lib/parse-nano-amount';//Eventually - Understand
 import { Vector3 } from 'three';
-//import { scaleRocketCount } from '@/lib/scale-rocket-count';// Kill
 import { Button } from '@/components/ui/button';
 import { Rocket, Eye, Globe } from 'lucide-react'; // Understand
-//import RocketAnimationManager from '@/components/rocket-animation-manager'; //Kill
 import { APP_CONFIG } from '@/constants/config'; //Understand - Keep
-import { StarlinkMesh } from '@/components/starlink-mesh'; //Kill -understand
 
 
 
@@ -354,10 +350,10 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
         {/* Conditionally render components based on view state */}
         <ThreeMesh
           lightRefs={[lightRef]}
-          repsGeoInfo={repsGeoInfo}
+          repsGeoInfo={repsGeoInfo} 
           manualTime={simulationTime}
           onNodeHover={setHoveredNode}
-        />
+        /> {/* for repsGeoInfo put null to cut the connections */}
         <CloudMesh />
         
         {/* Always render StarlinkMesh 

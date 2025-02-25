@@ -56,23 +56,25 @@ x2, y2, z2 = 2, 1, 1  # Example point 2 (not a unit vector)
 # Create the points as numpy arrays
 p = np.array([x1, y1, z1])  # First point (on the sphere)
 q = np.array([x2, y2, z2])  # Second point (off the sphere)
+def slerp_points(p,q):
+    # Number of points to interpolate
+    num_points = 10
+    liftrate = 1.2
+    q_mag = np.linalg.norm(q)
+    # Generate interpolated points
+    interpolated_points = []
+    for t in np.linspace(0, 1, num_points):
+        point = slerp(p, q, t)  # Interpolate between p and q
+        liftrate = math.sin(t*math.pi/2) * ( q_mag-1) + 1
+        point = point * liftrate
+        interpolated_points.append(point)
+    for points in interpolated_points:
+        print(points)
+    # Convert list of points to array for easy plotting
+    interpolated_points = np.array(interpolated_points)
+    return interpolated_points
 
-# Number of points to interpolate
-num_points = 10
-liftrate = 1.2
-q_mag = np.linalg.norm(q)
-# Generate interpolated points
-interpolated_points = []
-for t in np.linspace(0, 1, num_points):
-    point = slerp(p, q, t)  # Interpolate between p and q
-    liftrate = math.sin(t*math.pi/2) * ( q_mag-1) + 1
-    point = point * liftrate
-    interpolated_points.append(point)
-for points in interpolated_points:
-    print(points)
-# Convert list of points to array for easy plotting
-interpolated_points = np.array(interpolated_points)
-
+interpolated_points = slerp_points(p,q)
 # Plot the blue dots at the interpolated points
 ax.scatter(interpolated_points[:, 0], interpolated_points[:, 1], interpolated_points[:, 2], color='b', s=100)
 

@@ -2,6 +2,7 @@ from core_db_component import DatabaseCoreComponent
 from table_creation import TableCreation
 from table_deletion import TableDeletion
 from link_parser import RssParser
+from article_selection import articleSelector
 import logging
 
 logging.basicConfig(
@@ -16,9 +17,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-systemDelete = TableDeletion()
-systemInit = TableCreation()
-myParser = RssParser("US")
+#systemDelete = TableDeletion()
+#systemInit = TableCreation()
+#myParser = RssParser("US")
 #myParser.print_time()
-myParser.insert_entry()
+#myParser.insert_entry()
 #myParser.delete_table_data()
+#mySelector = articleSelector("FR")
+#mySelector.get_id_title_data()

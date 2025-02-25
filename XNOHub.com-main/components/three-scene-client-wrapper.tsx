@@ -12,7 +12,7 @@ const ThreeSceneClientWrapper: React.FC = () => {
   }, []);
 
   if (RepsData.length === 0) {
-    return <div className="font-[40px]">Loading data... Ӿ Ӿ Ӿ ...</div>;
+    return <div className="font-[40px]">Loading data... Bitch ...</div>;
   }
 
   return (

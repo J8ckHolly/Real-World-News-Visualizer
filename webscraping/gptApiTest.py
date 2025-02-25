@@ -12,7 +12,8 @@ completion = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": f"Please summarize the following text in less than 100 words:\n\n{text}"}
+        {"role": "user", "content": f"Please summarize the following text in 
+         less than 100 words:\n\n{text}"}
     ]
 )
 
