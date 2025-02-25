@@ -124,9 +124,10 @@ class WeightedGraph:
 
         #Right now do it the slow way of incrementing through and seeing what the highest value is
         #In future optomise this
-        print("The winner is: "+ max(self.nodes, key=lambda node: self.nodes[node].visits))
-        #for node in self.nodes:
-            #node.reset() -- have to come back to this
+        max_value = max(self.nodes, key=lambda node: self.nodes[node].visits)
+        print("The winner is: "+ max_value)
+        return max_value
+        
 
 
     def display_graph(self):

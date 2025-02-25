@@ -38,49 +38,49 @@ class TableCreation(DatabaseCoreComponent):
         createArticleTable = """
         CREATE TABLE IF NOT EXISTS article (
             article_id SERIAL PRIMARY KEY,
-            link TEXT UNIQUE,
+            ref text UNIQUE,
             time TIMESTAMP,
-            country VARCHAR(255)
+            country VARCHAR(255),
+            Title TEXT
         );
         """
-        createArticleDescriptionTable = """
-        CREATE TABLE article_description (
-            article_id INT,                  -- Foreign key column
-            filtered_text TEXT,              -- Text field to store filtered description
-            
-            -- Define the foreign key constraint
-            CONSTRAINT fk_article_id FOREIGN KEY (article_id) REFERENCES article (article_id)
+        createDeadArticleTable = """
+        CREATE TABLE dead_article (
+            ref text PRIMARY KEY,
+            time TIMESTAMP,
+            FOREIGN KEY (ref) REFERENCES article(ref) ON DELETE CASCADE
         );
         """
-        #createPageRankerGraphTable = """
-        #CREATE TABLE PageRanker_Graph (
-        #    article_country VARCHAR(255),               -- Foreign key to article's country
-        #    pageRankerGraph TEXT,         -- This will store the graph, using TEXT or a more suitable type
-        #    CONSTRAINT fk_country FOREIGN KEY (article_country) REFERENCES article (country)
-        #);
-        #"""
+        createPageRankerTable = """
+        CREATE TABLE page_ranker (
+            pageRanker_article_id INT,                  
+            country VARCHAR(255) UNIQUE,     
+            standard_deviation FLOAT,        
+            FOREIGN KEY (pageRanker_article_id) REFERENCES article (article_id) ON DELETE CASCADE
+        );
+        """
         
         createRankedEventsTable = """
         CREATE TABLE Ranked_Events (
-            article_gpt_id INT,           -- Foreign key to article_id from the article table
-            gpt_description TEXT,         -- Text field for GPT description
-            city VARCHAR(255),             -- City field with a maximum length of 255 characters
-            rank INT,                      -- Rank field (integer type)
+            article_gpt_id INT,   
+            gpt_description TEXT, 
+            city VARCHAR(255),
+            rank INT,                      
+            latitude FLOAT,                
+            longitude FLOAT,
             
             -- Define the foreign key constraint
-            CONSTRAINT fk_article_gpt_id FOREIGN KEY (article_gpt_id) REFERENCES article (article_id)
+            FOREIGN KEY (article_gpt_id) REFERENCES article (article_id) ON DELETE CASCADE
         );
         """
 
-        createDuplicateTable = """
-        CREATE TABLE Duplicate_Table (
-            link TEXT UNIQUE,
-            country VARCHAR(255)
+        createRankedEventsExtentedTable = """
+        CREATE TABLE ranked_events_extended (
+            article_id INT,                       
+            related_countries VARCHAR[] ,            
+            country_context TEXT[]                    
         );
         """
-        self.Tables = [createArticleTable, createArticleDescriptionTable,  createRankedEventsTable, createDuplicateTable]
-
-
-
-
-
+        
+        self.Tables = [createArticleTable, createDeadArticleTable, createPageRankerTable, 
+                       createRankedEventsTable, createRankedEventsExtentedTable]
