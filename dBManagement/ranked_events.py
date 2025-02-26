@@ -17,7 +17,7 @@ Purpose:
     -Need to work on standard deviation
 """
 class articleSelector():
-    def __init__(self, uid):
+    def __init__(self, uid = None):
         self.uid = uid
         self.OPENAI_KEY = self.load_db_password()
 
@@ -41,9 +41,17 @@ class articleSelector():
             print(f"An unexpected error occurred: {e}")
 
     def get_relevant_info(self):
-        self.text = ""
-        self.country = ""
+        self.title = "Yes, America Is Europe’s Enemy Now"
+        print(os.listdir())
+        with open("dBManagement/FireCrawl.txt", "r", encoding="utf-8") as file:
+            self.text = file.read()
+        self.country = "United States"
 
+    
+    def check_relevant_info(self):
+        if self.title and self.text and self.country:
+            print("Good")
+            
     def get_description_plus_city(self):
         client = OpenAI()
         prompt = f"""
@@ -57,7 +65,7 @@ class articleSelector():
             2. Extract the closest city mentioned in the article that is located in {self.country}. If no valid city is found, return the capital city of {self.country}.
         """
         completion = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
@@ -67,24 +75,14 @@ class articleSelector():
         # Get the summary and city output
         text_output = completion.choices[0].message.content
 
-        city_coordinates = {
-            "Paris": (48.8566, 2.3522),
-            "London": (51.5074, -0.1278),
-            "New York": (40.7128, -74.0060),
-            # Add more cities and their coordinates
-        }
-
-        # Extract city from AI response (assuming it returns "Paris" or "London", etc.)
-        city = "Paris"  # For example, extracted from AI output
-
-        # Retrieve coordinates
-        latitude, longitude = city_coordinates.get(city, city_coordinates.get(self.country.capitalize(), (None, None)))
-
-        print(f"City: {city}, Latitude: {latitude}, Longitude: {longitude}")
+        print(text_output)
 
 
 
-myobject = articleSelector()
+myobject = articleSelector(1)
+myobject.get_relevant_info()
+#myobject.check_relevant_info()
+myobject.get_description_plus_city()
 """
 processor = ArticleProcessor("U.S. pressures Kyiv to replace U.N. resolution condemning Russia", "Ukraine")
 article_text = "..."  # The article content
