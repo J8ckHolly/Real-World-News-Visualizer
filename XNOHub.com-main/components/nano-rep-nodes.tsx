@@ -7,10 +7,11 @@ interface NanoRepNodesProps {
   repsGeoInfo: IRepData[];
   earthRadius: number;
   onNodeHover: (nodeRepsGeoInfo: IRepData | null) => void;
+  onNodeClick: (nodeRepsGeoInfo: IRepData | null) => void;
 }
 
 const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
-  ({ repsGeoInfo, earthRadius, onNodeHover }) => {
+  ({ repsGeoInfo, earthRadius, onNodeHover, onNodeClick }) => {
     const earthRadiusRef = useRef(earthRadius);
 
     const nodes = useMemo(() => {
@@ -32,6 +33,13 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
       [onNodeHover]
     );
 
+    const handleNodeClick = useCallback(
+      (node: IRepData | null) => {
+        console.log('Clicked');
+        onNodeClick(node)
+      }, []
+    )
+
     return (
       <group>
         {nodes.map((node, index) => (
@@ -40,7 +48,7 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
             node={node}
             earthRadius={earthRadiusRef.current}
             onHover={handleNodeHover}
-            // onClick={handleNodeClick}
+            onClick={handleNodeClick}
           />
         ))}
         <NetworkArcs nodes={nodes} earthRadius={earthRadiusRef.current} />
@@ -68,10 +76,11 @@ interface NodeProps {
   node: IRepData & { position: THREE.Vector3; color: THREE.Color };
   earthRadius: number;
   onHover: (nodeRepsGeoInfo: IRepData | null) => void;
+  onClick: (nodeRepsGeoInfo: IRepData | null) => void;
 }
 
 const Node: React.FC<NodeProps> = React.memo(
-  ({ node, earthRadius, onHover }) => {
+  ({ node, earthRadius, onHover, onClick }) => {
     const [hovered, setHovered] = React.useState(false);
 
     const barHeight = useMemo(() => {
@@ -118,12 +127,21 @@ const Node: React.FC<NodeProps> = React.memo(
       [onHover]
     );
 
+    const handleClick = useCallback(
+      (e: THREE.Event) => {
+        e.stopPropagation();
+        onClick?.(node);  // Call onClick when the node is clicked
+      },
+      [onClick]
+    );
+
     return (
       <group
         position={barPosition}
         quaternion={barQuaternion}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
+        onClick={handleClick}
       >
         <mesh geometry={barGeometry}>
           <meshBasicMaterial

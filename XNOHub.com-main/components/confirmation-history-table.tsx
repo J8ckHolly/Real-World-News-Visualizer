@@ -18,11 +18,13 @@ import { NanoConfirmation } from '@/types/index';
 import { Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-react';
 import { APP_CONFIG } from '@/constants/config';
 
-interface ConfirmationHistoryTableProps {}
+interface ConfirmationHistoryTableProps {
+  onRotateViewClick: () => void;
+}
 
 export const ConfirmationHistoryTable: React.FC<
   ConfirmationHistoryTableProps
-> = () => {
+> = ({onRotateViewClick}) => {
   const { confirmationHistory } = useConfirmations();
   const [isFullView, setIsFullView] = useState(false);
   const [limitedHistory, setLimitedHistory] = useState<NanoConfirmation[]>([]);
@@ -43,30 +45,17 @@ export const ConfirmationHistoryTable: React.FC<
     setIsFullView(!isFullView);
   };
 
-  const toggleRowCount = () => {
-    setShowLessRows(!showLessRows);
-  };
-
   return (
     <div className="space-y-4 w-full md:w-auto pointer-events-none select-none">
       <div className="flex justify-end gap-2 pointer-events-auto">   
         <Button
-          onClick={() => {}}
+          onClick={onRotateViewClick}
           variant="outline"
           size="sm"
           className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
         >
-          {isFullView ? (
-            <>
-              <Minimize2 className="w-4 h-4" />
-              <span className="hidden md:inline">Min View</span>
-            </>
-          ) : (
-            <>
-              <Maximize2 className="w-4 h-4" />
-              <span className="hidden md:inline">Full View</span>
-            </>
-          )}
+          <Maximize2 className="w-4 h-4" />
+          <span className="hidden md:inline">LOL</span>
         </Button>
         <Button
           onClick={toggleView}

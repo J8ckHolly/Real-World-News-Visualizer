@@ -165,7 +165,7 @@ const NetworkArcs: React.FC<NetworkArcsProps> = ({ nodes, earthRadius }) => {
   );
 };
 
-const latLongToVector3 = (
+export const latLongToVector3 = (
   lat: number,
   long: number,
   radius: number
@@ -314,11 +314,7 @@ const getPointsForSegment = (
   return segmentPoints;
 };
 
-const getRandomDuration = (baseDuration: number) => {
-  // Generate a random factor between 0.5 and 1.5 (±50% variation)
-  const randomFactor = 0.5 + Math.random() * 1;
-  return baseDuration * randomFactor;
-};
+
 
 const getRandomSegmentLength = (baseSegmentLength: number) => {
   // Generate a random factor between 0.5 and 1.5 (±50% variation)
@@ -327,3 +323,4 @@ const getRandomSegmentLength = (baseSegmentLength: number) => {
 };
 
 export default NetworkArcs;
+

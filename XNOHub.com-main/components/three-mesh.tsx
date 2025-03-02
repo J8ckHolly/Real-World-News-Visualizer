@@ -11,13 +11,15 @@ interface ThreeMeshProps {
   repsGeoInfo: IRepData[] | null;
   manualTime?: Date;
   onNodeHover: (noderepsGeoInfo: IRepData | null) => void;
+  onNodeClick: (noderepsGeoInfo: IRepData | null) => void;
 }
 
 const ThreeMesh: React.FC<ThreeMeshProps> = ({
   lightRefs,
   repsGeoInfo,
   manualTime,
-  onNodeHover
+  onNodeHover,
+  onNodeClick
 }) => {
   const earthRef = useRef<THREE.Mesh>(null);
   const sunRef = useRef<THREE.Mesh>(null);
@@ -113,6 +115,7 @@ const ThreeMesh: React.FC<ThreeMeshProps> = ({
             repsGeoInfo={repsGeoInfo}
             earthRadius={1}
             onNodeHover={onNodeHover}
+            onNodeClick={onNodeClick}
           />
         )}
       </mesh>

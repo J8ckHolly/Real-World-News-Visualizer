@@ -43,7 +43,7 @@ def slerp(p, q, t):
     interp_point = a * p_norm + b * q_norm
     
     # Scale the result to the magnitude of the original q (off-surface point)
-    q_mag = np.linalg.norm(q)  # Get the magnitude of q (the off-surface point)
+    interp_point = interp_point / np.linalg.norm(interp_point)  # Get the magnitude of q (the off-surface point)
     return interp_point  # Scale the interpolated result
 
 # Input coordinates for two points (x, y, z)
