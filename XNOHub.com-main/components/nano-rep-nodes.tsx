@@ -2,6 +2,7 @@ import React, { useMemo, useCallback, useRef } from 'react';
 import * as THREE from 'three';
 import { IRepData } from '@/types/index';
 import NetworkArcs from './network-arc';
+import ArcBetweenNodes from './arcBetweenNodes';
 
 interface NanoRepNodesProps {
   repsGeoInfo: IRepData[];
@@ -9,6 +10,46 @@ interface NanoRepNodesProps {
   onNodeHover: (nodeRepsGeoInfo: IRepData | null) => void;
   onNodeClick: (nodeRepsGeoInfo: IRepData | null) => void;
 }
+
+const representativeData: IRepData = {
+  account: "nano_3rep1234567890abcdefghijklmnopqrstuvwx",
+  account_formatted: "nano_3rep...tuvwx",
+  alias: "MyRepresentative",
+  is_known_account: true,
+  last_telemetry_report: new Date().toISOString(), // Current timestamp
+  node_id: "rep-node-001",
+  node_ip: "192.168.1.100",
+  node_maker: "NanoNodeMaker",
+  node_uptime: "5 days, 4 hours",
+  node_version: "V23.2",
+  show_weight: true,
+  votingweight: 1_500_000_000_000_000_000_000_000_000_000, // Using underscores for readability
+  weight_formatted: "1.5 MNANO",
+  weight_percent: 2.5,
+  latitude: 6.4238,
+  longitude: -66.9036,
+  assigned_city: true,
+};
+
+const yucatanRepresentativeData: IRepData = {
+  account: "nano_3yucatan1234567890abcdefghijklmnopqrstuvwx",
+  account_formatted: "nano_3yucatan...tuvwx",
+  alias: "YucatanRepresentative",
+  is_known_account: true,
+  last_telemetry_report: new Date().toISOString(), // Current timestamp
+  node_id: "rep-node-002",
+  node_ip: "192.168.2.200",
+  node_maker: "YucatanNodeMaker",
+  node_uptime: "10 days, 12 hours",
+  node_version: "V23.3",
+  show_weight: true,
+  votingweight: 2_000_000_000_000_000_000_000_000_000_000, // Adjusted value
+  weight_formatted: "2 MNANO",
+  weight_percent: 3.1,
+  latitude: 20.4,  // Approximate latitude for Yucatán Peninsula
+  longitude: -89.1, // Approximate longitude for Yucatán Peninsula
+  assigned_city: true,
+};
 
 const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
   ({ repsGeoInfo, earthRadius, onNodeHover, onNodeClick }) => {
@@ -52,6 +93,37 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
           />
         ))}
         <NetworkArcs nodes={nodes} earthRadius={earthRadiusRef.current} />
+        <Node
+          key={representativeData.account}
+          node={{
+            ...representativeData,
+            position: calculatePosition(representativeData.latitude,representativeData.longitude,earthRadiusRef.current),
+            color: new THREE.Color(0xff0000)
+          }}
+          earthRadius={earthRadiusRef.current}
+          onHover={handleNodeHover}
+          onClick={handleNodeClick}
+        />
+        <Node
+          key={yucatanRepresentativeData.account}
+          node={{
+            ...yucatanRepresentativeData,
+            position: calculatePosition(
+              yucatanRepresentativeData.latitude,
+              yucatanRepresentativeData.longitude,
+              earthRadiusRef.current
+            ),
+            color: new THREE.Color(0x00ff00) // Green color for differentiation
+          }}
+          earthRadius={earthRadiusRef.current}
+          onHover={handleNodeHover}
+          onClick={handleNodeClick}
+        />
+        <ArcBetweenNodes
+        startNode={yucatanRepresentativeData}
+        endNode={representativeData}
+        earthRadius={earthRadiusRef.current}/>
+
       </group>
     );
   }

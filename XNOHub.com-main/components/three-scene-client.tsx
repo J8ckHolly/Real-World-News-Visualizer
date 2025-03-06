@@ -29,7 +29,7 @@ import { latLongToVector3 } from './network-arc';
 const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number, maxLiftRate: number): THREE.Vector3 => {
   const startNormal = start.clone().normalize();
   const endNormal = end.clone().normalize(); //Come Back and make it so that it doesn't need to be normalzied always
-
+  
   const dot = startNormal.dot(endNormal);
   const omega = Math.acos(Math.min(Math.max(dot, -1), 1));
   const sinOmega = Math.sin(omega);
@@ -142,7 +142,8 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     const maxLiftRate = 1.2;
     let t = 0; // Local interpolation state instead of using React state
     let points: string[] = []; // Store points as text
-  
+    console.log(trackPoint)
+    console.log(eventExtendedPoint)
     const animate = () => {
       if (t > 1) {
         console.log('Done')

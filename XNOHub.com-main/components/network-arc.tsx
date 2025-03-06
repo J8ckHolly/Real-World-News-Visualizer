@@ -180,7 +180,7 @@ export const latLongToVector3 = (
   );
 };
 
-const createGreatCircleArc = (
+export const createGreatCircleArc = (
   start: THREE.Vector3,
   end: THREE.Vector3,
   radius: number,
@@ -323,4 +323,3 @@ const getRandomSegmentLength = (baseSegmentLength: number) => {
 };
 
 export default NetworkArcs;
-
