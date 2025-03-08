@@ -17,6 +17,7 @@ import { formatRelativeTime } from '@/lib/format-relative-time';
 import { NanoConfirmation } from '@/types/index';
 import { Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-react';
 import { APP_CONFIG } from '@/constants/config';
+import { useEvents } from '@/providers/event-provider';
 
 interface ConfirmationHistoryTableProps {
   onRotateViewClick: () => void;
@@ -29,6 +30,8 @@ export const ConfirmationHistoryTable: React.FC<
   const [isFullView, setIsFullView] = useState(false);
   const [limitedHistory, setLimitedHistory] = useState<NanoConfirmation[]>([]);
   const [showLessRows, setShowLessRows] = useState(true);
+  //const { eventHistory } = useEvents();
+  
 
   const displayedConfirmations = useMemo(() => {
     if (showLessRows && window.innerWidth < 768) {
@@ -39,6 +42,7 @@ export const ConfirmationHistoryTable: React.FC<
 
   useEffect(() => {
     setLimitedHistory(displayedConfirmations.slice(0, 100));
+    //console.log(eventHistory.slice(0,1));
   }, [displayedConfirmations]);
 
   const toggleView = () => {

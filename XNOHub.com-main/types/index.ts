@@ -120,3 +120,9 @@ export interface NanoConfirmation {
     };
   };
 }
+
+export interface countryEvent {
+  country: string;
+  title: string;
+  time: number
+}
