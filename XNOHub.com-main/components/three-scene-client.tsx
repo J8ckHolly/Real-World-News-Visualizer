@@ -26,21 +26,25 @@ import { Rocket, Eye, Globe } from 'lucide-react'; // Understand
 import { APP_CONFIG } from '@/constants/config'; //Understand - Keep
 import { latLongToVector3 } from './network-arc';
 
-const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number, maxLiftRate: number): THREE.Vector3 => {
+const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number): THREE.Vector3 => {
   const startNormal = start.clone().normalize();
-  const endNormal = end.clone().normalize(); //Come Back and make it so that it doesn't need to be normalzied always
+  const endNormal = end.clone().normalize(); 
+
+  const start_magnitude = start.length();
+  const end_magnitude = end.length();
   
   const dot = startNormal.dot(endNormal);
   const omega = Math.acos(Math.min(Math.max(dot, -1), 1));
   const sinOmega = Math.sin(omega);
 
+  const liftFactor = Math.sin(t * Math.PI/2) * (end_magnitude - start_magnitude) + start_magnitude; 
   if (sinOmega === 0) {
     return start.clone();
   } else {
     const weight0 = Math.sin((1 - t) * omega) / sinOmega;
     const weight1 = Math.sin(t * omega) / sinOmega;
 
-    const liftFactor = Math.sin(t * Math.PI/2) * (maxLiftRate - 1) + 1; //Multiplying by maxLiftRate here might be a problem
+    
 
     const point = new THREE.Vector3()
       .addScaledVector(startNormal, weight0)
@@ -51,6 +55,22 @@ const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number, maxLiftR
     return point;
   }
 };
+
+function rotatePointAboutX(point: THREE.Vector3): THREE.Vector3 {
+  const angleDegrees = 23.5
+  
+  // Convert degrees to radians
+  const angleRadians = THREE.MathUtils.degToRad(angleDegrees);
+  
+  // Create a rotation matrix around the X axis
+  const rotationMatrix = new THREE.Matrix4();
+  rotationMatrix.makeRotationX(angleRadians);
+  
+  // Apply the rotation to the point
+  const rotatedPoint = point.clone().applyMatrix4(rotationMatrix);
+  
+  return rotatedPoint;
+}
 
 interface ThreeSceneClientProps {
   repsGeoInfo: IRepData[];
@@ -135,23 +155,23 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   
   const zoomIn = () => {
     if (!clickedNode || !cameraRef.current) return;
-  
-    const trackPoint = cameraRef.current.position.clone();
-    const eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2);
-    const numPoints = 100;
-    const maxLiftRate = 1.2;
-    let t = 0; // Local interpolation state instead of using React state
     let points: string[] = []; // Store points as text
+    const trackPoint = cameraRef.current.position.clone();
+    let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2);
+    eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
+    const numPoints = 100;
+    let t = 0; // Local interpolation state instead of using React state
+    
     console.log(trackPoint)
     console.log(eventExtendedPoint)
     const animate = () => {
       if (t > 1) {
         console.log('Done')
-        exportToFile(points); // Export points **after** animation finishes
+        //exportToFile(points); // Export points **after** animation finishes
         return;
       }
   
-      const interpolatedPoint = SLERPZOOM(trackPoint, eventExtendedPoint, t, maxLiftRate);
+      const interpolatedPoint = SLERPZOOM(trackPoint, eventExtendedPoint, t);
       cameraRef.current!.position.copy(interpolatedPoint);
       points.push(`${interpolatedPoint.x}, ${interpolatedPoint.y}, ${interpolatedPoint.z}`);
   

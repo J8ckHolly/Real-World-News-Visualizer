@@ -12,21 +12,11 @@ interface ArcBetweenNodesProps {
 }
 
 const ArcBetweenNodes: React.FC<ArcBetweenNodesProps> = ({ startNode, endNode, earthRadius }) => {
-  const startPos = useMemo(() => latLongToVector3(startNode.latitude, startNode.longitude, earthRadius), [
-    startNode.latitude,
-    startNode.longitude,
-    earthRadius
-  ]);
+  const startPos = latLongToVector3(startNode.latitude, startNode.longitude, earthRadius);
 
-  const endPos = useMemo(() => latLongToVector3(endNode.latitude, endNode.longitude, earthRadius), [
-    endNode.latitude,
-    endNode.longitude,
-    earthRadius
-  ]);
+  const endPos = latLongToVector3(endNode.latitude, endNode.longitude, earthRadius);
 
-  const arcPoints = useMemo(() => {
-    return createGreatCircleArc(startPos, endPos, earthRadius);
-  }, [startPos, endPos, earthRadius]);
+  const arcPoints = createGreatCircleArc(startPos, endPos, earthRadius);
 
   // State for controlling the progress of the pulsating effect
   const [progress, setProgress] = useState(0);

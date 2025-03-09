@@ -2,11 +2,18 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from tkinter import Tk, filedialog
 
-print("Current working directory:", os.getcwd())
+# Open file dialog
+Tk().withdraw()  # Hide root window
+file_path = filedialog.askopenfilename(title="Select a .txt file", filetypes=[("Text files", "*.txt")])
+
+if not file_path:
+    print("No file selected. Exiting.")
+    exit()
 
 # Load points from the file
-points = np.loadtxt("./dBManagement/camera_path.txt", delimiter=",")
+points = np.loadtxt(file_path, delimiter=",")
 
 # Extract x, y, z coordinates
 x, y, z = points[:, 0], points[:, 1], points[:, 2]
@@ -16,8 +23,8 @@ fig = plt.figure(figsize=(8, 8))
 ax = fig.add_subplot(111, projection='3d')
 
 # Define the colors (Yellow -> Blue)
-colors = np.linspace(0, 1, len(points))  # Create a range from 0 to 1 based on number of points
-cmap = plt.get_cmap('coolwarm')  # This will create a yellow-to-blue gradient
+colors = np.linspace(0, 1, len(points))
+cmap = plt.get_cmap('coolwarm')
 
 # Plot the points with color gradient
 for i in range(len(points) - 1):
@@ -40,5 +47,4 @@ ax.set_zlabel("Z")
 ax.set_title("3D Camera Path with Gradient (Yellow to Blue)")
 
 # Show plot
-plt.legend()
 plt.show()
