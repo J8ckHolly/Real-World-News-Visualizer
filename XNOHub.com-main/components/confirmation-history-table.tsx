@@ -20,12 +20,13 @@ import { APP_CONFIG } from '@/constants/config';
 import { useEvents } from '@/providers/event-provider';
 
 interface ConfirmationHistoryTableProps {
-  onRotateViewClick: () => void;
+  cameraStateFSM: () => void;
+  cameraState: string;
 }
 
 export const ConfirmationHistoryTable: React.FC<
   ConfirmationHistoryTableProps
-> = ({onRotateViewClick}) => {
+> = ({cameraStateFSM, cameraState}) => {
   const { confirmationHistory } = useConfirmations();
   const [isFullView, setIsFullView] = useState(false);
   const [limitedHistory, setLimitedHistory] = useState<NanoConfirmation[]>([]);
@@ -53,13 +54,13 @@ export const ConfirmationHistoryTable: React.FC<
     <div className="space-y-4 w-full md:w-auto pointer-events-none select-none">
       <div className="flex justify-end gap-2 pointer-events-auto">   
         <Button
-          onClick={onRotateViewClick}
+          onClick={cameraStateFSM}
           variant="outline"
           size="sm"
           className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
         >
           <Maximize2 className="w-4 h-4" />
-          <span className="hidden md:inline">LOL</span>
+          <span className="hidden md:inline">{cameraState}</span>
         </Button>
         <Button
           onClick={toggleView}

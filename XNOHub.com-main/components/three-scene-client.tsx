@@ -43,9 +43,6 @@ const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number): THREE.V
   } else {
     const weight0 = Math.sin((1 - t) * omega) / sinOmega;
     const weight1 = Math.sin(t * omega) / sinOmega;
-
-    
-
     const point = new THREE.Vector3()
       .addScaledVector(startNormal, weight0)
       .addScaledVector(endNormal, weight1)
@@ -77,6 +74,8 @@ interface ThreeSceneClientProps {
   serverDateTime: Date | null;
 }
 
+type ButtonState = "Spin" | "Stop" | "Return";
+
 const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   repsGeoInfo,
   serverDateTime
@@ -88,16 +87,15 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   const [hoveredNode, setHoveredNode] = useState<IRepData | null>(null);
   const [clickedNode, setClickedNode] = useState<IRepData | null>(null);
   const { confirmationHistory: confirmations } = useConfirmations();
-  const [NodePos, setNodePos] = useState<THREE.Vector3>(new THREE.Vector3());
-  const [enableRotate, setEnableRotate] = useState(false);
-  const [NodePosPolar, setNodePosPolar] = useState<THREE.Vector3>(new THREE.Vector3());
-  const [hoverNodePol, setHoverNodePol] = useState<THREE.Vector3>(new THREE.Vector3());
-  const [isRocketView, setIsRocketView] = useState(false);
+  const [trackPoint, setTrackPoint] = useState<THREE.Vector3>(new THREE.Vector3());
+  const [cameraState, setCameraState] = useState<ButtonState>("Stop");
+  const [zoomedIn, setZoomedIn] = useState(false)
+  const [enableRotate, setEnableRotate] = useState(true);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const animationFrameId = useRef<number>(-1); // Store the animation frame ID in a ref
-  const [isStarlinkView, setIsStarlinkView] = useState(false);
-  const [angle, setAngle] = useState(0);
-  const [t, setT] = useState(0);
+  const [theta, setTheta] = useState(0);
+  const [phi, setPhi] = useState(0);
+  
   
 
   useEffect(() => {
@@ -106,17 +104,63 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     }
   }, [serverDateTime]);
 
-  const toggleRotateView = useCallback(() => {
-    setEnableRotate((prev) => !prev);
-  }, [])
+  const cameraStateFSM = useCallback(() => {
+    console.log("Clicked");
+    setCameraState((prevCameraState) => {
+      if (prevCameraState === "Spin") {
+        setEnableRotate((prev) => !prev);
+        return "Stop";
+      } else if (prevCameraState === "Stop" && !zoomedIn) {
+        setEnableRotate((prev) => !prev);
+        return "Spin";
+      } else if (prevCameraState === "Stop" && zoomedIn) {
+        return "Return";
+      } else if (prevCameraState === "Return") {
+        console.log("Here");
+        return "Stop";
+      }
+      return prevCameraState;
+    });
+  }, [zoomedIn]);
 
   useEffect(() => {
-    if (enableRotate) {
+    cameraStateFSM();
+  }, [zoomedIn]);
+  
+  // FSM for the camera
+  useEffect(() => {
+    //Spinning Actions
+    if (cameraState==="Spin") {
       console.log("Rotating");
-      startCameraAnimation();
-    } 
-    else if(clickedNode){
-      zoomIn()
+      rotatingCamera();
+    }
+    //Zooming from track to zoom plane
+    else if(cameraState === "Stop" && clickedNode){
+      if (!clickedNode || !cameraRef.current) return;
+      console.log("Zoomed In");
+      setTrackPoint(cameraRef.current.position.clone())
+
+      let start = cameraRef.current.position.clone()
+      let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2); 
+      eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
+      setZoomedIn((prevZoomDone) => !prevZoomDone);
+      zoomFunc(start,eventExtendedPoint)
+    }
+    // On Zoom plane switching from one node to another
+    else if(cameraState === "Return" && clickedNode){
+      if (!clickedNode || !cameraRef.current) return;
+      console.log("Point Switching");
+
+      let start = cameraRef.current.position.clone()
+      let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2); 
+      eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
+      zoomFunc(start,eventExtendedPoint)
+    }
+
+    else if(cameraState === "Return" && zoomedIn){
+      if(!cameraRef.current) return;
+      let start = cameraRef.current.position.clone()
+      zoomFunc(start,trackPoint)
     }
     
     else {
@@ -127,20 +171,21 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
 
     // Cleanup on component unmount or when effect is cleaned up
     return () => cancelAnimationFrame(animationFrameId.current);
-  }, [enableRotate, clickedNode]);
+  }, [clickedNode, cameraState]);
 
-  const startCameraAnimation = () => {
+
+  const rotatingCamera = () => {
     const radius = 3;
     const speed = 0.005;
 
     const animateCamera = () => {
       if (cameraRef.current) {
-        setAngle((prevAngle) => {
-          const newAngle = prevAngle + speed;
-          cameraRef.current!.position.x = radius * Math.cos(newAngle);
-          cameraRef.current!.position.z = radius * Math.sin(newAngle);
+        setTheta((prevTheta) => {
+          const newTheta = prevTheta + speed;
+          cameraRef.current!.position.x = radius * Math.cos(newTheta);
+          cameraRef.current!.position.z = radius * Math.sin(newTheta);
           cameraRef.current!.lookAt(0, 0, 0);
-          return newAngle;  // Return the new angle to update the state
+          return newTheta;  // Return the new Theta to update the state
         });
         animationFrameId.current = requestAnimationFrame(animateCamera);
       }
@@ -153,27 +198,22 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     animationFrameId.current = requestAnimationFrame(animateCamera);
   };
   
-  const zoomIn = () => {
-    if (!clickedNode || !cameraRef.current) return;
-    let points: string[] = []; // Store points as text
-    const trackPoint = cameraRef.current.position.clone();
-    let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2);
-    eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
+  const zoomFunc = (start: THREE.Vector3, end: THREE.Vector3) => {
+    console.log("hi")
+    console.log(cameraState)
+    console.log(start)
+    console.log(end)
     const numPoints = 100;
     let t = 0; // Local interpolation state instead of using React state
-    
-    console.log(trackPoint)
-    console.log(eventExtendedPoint)
     const animate = () => {
       if (t > 1) {
         console.log('Done')
-        //exportToFile(points); // Export points **after** animation finishes
+        setClickedNode(null);
         return;
       }
   
-      const interpolatedPoint = SLERPZOOM(trackPoint, eventExtendedPoint, t);
+      const interpolatedPoint = SLERPZOOM(start, end, t);  //Change start and end
       cameraRef.current!.position.copy(interpolatedPoint);
-      points.push(`${interpolatedPoint.x}, ${interpolatedPoint.y}, ${interpolatedPoint.z}`);
   
       t += 1 / numPoints;
       animationFrameId.current = requestAnimationFrame(animate);
@@ -182,23 +222,13 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     cancelAnimationFrame(animationFrameId.current); // Ensure previous animation is stopped
     animationFrameId.current = requestAnimationFrame(animate);
   };
-  
-  const exportToFile = (points: string[]) => {
-    const blob = new Blob([points.join("\n")], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "camera_path.txt";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   
   // Memoize camera settings
   const cameraSettings = useMemo(
     () => ({
       fov: 45,
-      position: [0, 2, 4] as [number, number, number]
+      position: [3, 2, 0] as [number, number, number]
     }),
     []
   );
@@ -256,7 +286,9 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
       </div>
 
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2"> {/*Get ride of */}
-        <ConfirmationHistoryTable onRotateViewClick={toggleRotateView}/>
+        <ConfirmationHistoryTable 
+        cameraStateFSM={cameraStateFSM}
+        cameraState={cameraState}/>
       </div> {/*Get ride of */}
 
       <Canvas

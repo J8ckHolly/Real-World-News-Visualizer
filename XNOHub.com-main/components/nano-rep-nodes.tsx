@@ -51,6 +51,46 @@ const yucatanRepresentativeData: IRepData = {
   assigned_city: true,
 };
 
+const rioRepresentativeData: IRepData = {
+  account: "nano_3rio1234567890abcdefghijklmnopqrstuvwx",
+  account_formatted: "nano_3rio...tuvwx",
+  alias: "RioRepresentative",
+  is_known_account: true,
+  last_telemetry_report: new Date().toISOString(), // Current timestamp
+  node_id: "rep-node-003",
+  node_ip: "192.168.3.100",
+  node_maker: "RioNodeMaker",
+  node_uptime: "15 days, 8 hours",
+  node_version: "V23.3",
+  show_weight: true,
+  votingweight: 1_800_000_000_000_000_000_000_000_000_000, // Adjusted value
+  weight_formatted: "1.8 MNANO",
+  weight_percent: 2.9,
+  latitude: -22.9068, // Approximate latitude for Rio de Janeiro
+  longitude: -43.1729, // Approximate longitude for Rio de Janeiro
+  assigned_city: true,
+};
+
+const limaRepresentativeData: IRepData = {
+  account: "nano_3lima1234567890abcdefghijklmnopqrstuvwx",
+  account_formatted: "nano_3lima...tuvwx",
+  alias: "LimaRepresentative",
+  is_known_account: true,
+  last_telemetry_report: new Date().toISOString(), // Current timestamp
+  node_id: "rep-node-004",
+  node_ip: "192.168.4.150",
+  node_maker: "LimaNodeMaker",
+  node_uptime: "20 days, 3 hours",
+  node_version: "V23.3",
+  show_weight: true,
+  votingweight: 1_600_000_000_000_000_000_000_000_000_000, // Adjusted value
+  weight_formatted: "1.6 MNANO",
+  weight_percent: 2.5,
+  latitude: -12.0464, // Approximate latitude for Lima, Peru
+  longitude: -77.0428, // Approximate longitude for Lima, Peru
+  assigned_city: true,
+};
+
 const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
   ({ repsGeoInfo, earthRadius, onNodeHover, onNodeClick }) => {
     const earthRadiusRef = useRef(earthRadius);
