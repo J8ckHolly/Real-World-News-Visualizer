@@ -1,24 +1,29 @@
-import os
+from pydantic import BaseModel
 from openai import OpenAI
+import os
 from dotenv import load_dotenv
-
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
 client = OpenAI()
-text = "hi"
-completion = client.chat.completions.create(
+
+class CalendarEvent(BaseModel):
+    name: str
+    date: str
+    participants: list[str]
+
+completion = client.beta.chat.completions.parse(
     model="gpt-4o-mini",
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": f"""Please summarize the following text in 
-        less than 100 words:\n\n{text}"""}
-    ]
+        {"role": "system", "content": "Extract the event information."},
+        {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
+    ],
+    response_format=CalendarEvent,
 )
 
-# Extract the text from the response correctly
-text_output = completion.choices[0].message.content  # Access using dot notation
+event = completion.choices[0].message.parsed
+print(event)
 
-# Print just the text output
-print(text_output)
+
+city: str = Field(description="""Closest city mentioned in the article that is located in the country 
+                            given in the prompt. If no valid city is found, return the capital city of the country 
+                            given in the prompt""")

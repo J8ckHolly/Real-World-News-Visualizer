@@ -104,7 +104,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     }
   }, [serverDateTime]);
 
-  const cameraStateFSM = useCallback(() => {
+  const cameraStateFSM = () => {
     console.log("Clicked");
     setCameraState((prevCameraState) => {
       if (prevCameraState === "Spin") {
@@ -113,15 +113,14 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
       } else if (prevCameraState === "Stop" && !zoomedIn) {
         setEnableRotate((prev) => !prev);
         return "Spin";
-      } else if (prevCameraState === "Stop" && zoomedIn) {
-        return "Return";
-      } else if (prevCameraState === "Return") {
+      } 
+       else if (prevCameraState === "Return") {
         console.log("Here");
         return "Stop";
       }
       return prevCameraState;
     });
-  }, [zoomedIn]);
+  };
 
   useEffect(() => {
     cameraStateFSM();
