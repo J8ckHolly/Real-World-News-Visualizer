@@ -74,7 +74,7 @@ interface ThreeSceneClientProps {
   serverDateTime: Date | null;
 }
 
-type ButtonState = "Spin" | "Stop" | "Return";
+type ButtonState = "Spin" | "Stop" | "ZoomIn" | "Focused" | "ZoomOut";
 
 const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   repsGeoInfo,
@@ -89,64 +89,76 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   const { confirmationHistory: confirmations } = useConfirmations();
   const [trackPoint, setTrackPoint] = useState<THREE.Vector3>(new THREE.Vector3());
   const [cameraState, setCameraState] = useState<ButtonState>("Stop");
-  const [zoomedIn, setZoomedIn] = useState(false)
+  const [cameraStateBtn, setCameraStateBtn] = useState(false);
   const [enableRotate, setEnableRotate] = useState(true);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const animationFrameId = useRef<number>(-1); // Store the animation frame ID in a ref
   const [theta, setTheta] = useState(0);
   const [phi, setPhi] = useState(0);
   
-  
-
   useEffect(() => {
     if (serverDateTime) {
       setSimulationTime(serverDateTime);
     }
   }, [serverDateTime]);
 
-  const cameraStateFSM = () => {
-    console.log("Clicked");
+  useEffect(() => {
+    console.log("ButtonPressed: ",{cameraStateBtn});
     setCameraState((prevCameraState) => {
-      if (prevCameraState === "Spin") {
+      if (prevCameraState === "Spin" && cameraStateBtn === true) {
         setEnableRotate((prev) => !prev);
         return "Stop";
-      } else if (prevCameraState === "Stop" && !zoomedIn) {
+      } else if (prevCameraState === "Stop" && cameraStateBtn === true) {
         setEnableRotate((prev) => !prev);
         return "Spin";
-      } 
-       else if (prevCameraState === "Return") {
-        console.log("Here");
+      } else if (prevCameraState === "Stop" && clickedNode) {
+        return "ZoomIn";
+      } else if (prevCameraState === "ZoomIn") {
+        return "Focused";
+      } else if (prevCameraState === "Focused" && cameraStateBtn === true) {
+        return "ZoomOut";
+      } else if (prevCameraState === "ZoomOut") {
         return "Stop";
       }
+       
       return prevCameraState;
     });
-  };
+  }, [clickedNode, cameraStateBtn]);
 
-  useEffect(() => {
-    cameraStateFSM();
-  }, [zoomedIn]);
   
   // FSM for the camera
   useEffect(() => {
-    //Spinning Actions
+    //Spinning Actionsf
     if (cameraState==="Spin") {
       console.log("Rotating");
+      setCameraStateBtn((prev) => !prev);
       rotatingCamera();
     }
+    //Stop State
+    else if(cameraState==="Stop") {
+      console.log("Stopped");
+      // Cleanup the animation if rotation is disabled
+      setCameraStateBtn((prev) => !prev);
+      cancelAnimationFrame(animationFrameId.current);
+    }
     //Zooming from track to zoom plane
-    else if(cameraState === "Stop" && clickedNode){
+    else if(cameraState === "ZoomIn"){
       if (!clickedNode || !cameraRef.current) return;
       console.log("Zoomed In");
-      setTrackPoint(cameraRef.current.position.clone())
 
+      setTrackPoint(cameraRef.current.position.clone())
       let start = cameraRef.current.position.clone()
-      let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2); 
+      let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2);
       eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
-      setZoomedIn((prevZoomDone) => !prevZoomDone);
       zoomFunc(start,eventExtendedPoint)
     }
+
     // On Zoom plane switching from one node to another
-    else if(cameraState === "Return" && clickedNode){
+    else if(cameraState === "Focused"){
+      if (cameraStateBtn) {
+        setCameraStateBtn(false);
+      }
+
       if (!clickedNode || !cameraRef.current) return;
       console.log("Point Switching");
 
@@ -156,18 +168,14 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
       zoomFunc(start,eventExtendedPoint)
     }
 
-    else if(cameraState === "Return" && zoomedIn){
+    //Zooming Out
+    else if(cameraState === "ZoomOut"){
       if(!cameraRef.current) return;
+      console.log("Zooming Out")
       let start = cameraRef.current.position.clone()
       zoomFunc(start,trackPoint)
+      
     }
-    
-    else {
-      console.log("Not Moving");
-      // Cleanup the animation if rotation is disabled
-      cancelAnimationFrame(animationFrameId.current);
-    }
-
     // Cleanup on component unmount or when effect is cleaned up
     return () => cancelAnimationFrame(animationFrameId.current);
   }, [clickedNode, cameraState]);
@@ -198,16 +206,14 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   };
   
   const zoomFunc = (start: THREE.Vector3, end: THREE.Vector3) => {
-    console.log("hi")
     console.log(cameraState)
-    console.log(start)
-    console.log(end)
     const numPoints = 100;
     let t = 0; // Local interpolation state instead of using React state
     const animate = () => {
       if (t > 1) {
         console.log('Done')
         setClickedNode(null);
+        setCameraStateBtn(false);
         return;
       }
   
@@ -286,7 +292,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
 
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2"> {/*Get ride of */}
         <ConfirmationHistoryTable 
-        cameraStateFSM={cameraStateFSM}
+        setCameraStateBtn={setCameraStateBtn}
         cameraState={cameraState}/>
       </div> {/*Get ride of */}
 

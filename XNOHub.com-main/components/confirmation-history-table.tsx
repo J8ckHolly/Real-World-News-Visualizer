@@ -20,13 +20,13 @@ import { APP_CONFIG } from '@/constants/config';
 import { useEvents } from '@/providers/event-provider';
 
 interface ConfirmationHistoryTableProps {
-  cameraStateFSM: () => void;
+  setCameraStateBtn: (state: boolean) => void;
   cameraState: string;
 }
 
 export const ConfirmationHistoryTable: React.FC<
   ConfirmationHistoryTableProps
-> = ({cameraStateFSM, cameraState}) => {
+> = ({setCameraStateBtn, cameraState}) => {
   const { confirmationHistory } = useConfirmations();
   const [isFullView, setIsFullView] = useState(false);
   const [limitedHistory, setLimitedHistory] = useState<NanoConfirmation[]>([]);
@@ -54,7 +54,8 @@ export const ConfirmationHistoryTable: React.FC<
     <div className="space-y-4 w-full md:w-auto pointer-events-none select-none">
       <div className="flex justify-end gap-2 pointer-events-auto">   
         <Button
-          onClick={cameraStateFSM}
+          onClick={() => {setCameraStateBtn(true);}
+          }
           variant="outline"
           size="sm"
           className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"

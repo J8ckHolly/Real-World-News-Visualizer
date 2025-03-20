@@ -116,7 +116,7 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
 
     const handleNodeClick = useCallback(
       (node: IRepData | null) => {
-        console.log('Clicked');
+        console.log('Node Clicked');
         onNodeClick(node)
       }, []
     )
