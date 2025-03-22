@@ -6,9 +6,10 @@ import instructor
 import os
 import logging
 
-class gptDescriptor():
+class gptDescriptor(DatabaseCoreComponent):
 
     def __init__(self, uid=None):
+        super().__init__()
         self.uid = uid
         self.OPENAI_KEY = self.load_openAI_password()
 
@@ -90,6 +91,32 @@ class gptDescriptor():
         return completion.choices[0].message.parsed
 
 # Example Usage
+"""
 myobject = gptDescriptor(1)
 myobject.get_relevant_info()
 print(myobject.get_description_plus_city())
+"""
+
+class fireCrawl(DatabaseCoreComponent):
+    def __init__(self):
+        super().__init__()
+        self.FIRE_CRAWL_API = self.load_fire_crawl_api()
+
+    def load_fire_crawl_api(self):
+        try:
+            file_path = r'.\webscraping\.env'
+            load_dotenv(dotenv_path=file_path)
+            FIRE_CRAWL_API = os.getenv('FIRE_CRAWL_API')
+            logging.info("Successfully loaded Fire Crawl API key")
+            if FIRE_CRAWL_API is None:
+                logging.error("FIRE_CRAWL_API environment variable is not found")
+                raise ValueError("FIRE_CRAWL_API environment variable is not found")
+            return FIRE_CRAWL_API
+        except FileNotFoundError:
+            logging.error(f"Error: The file at {file_path} was not found.")
+            print(f"Error: The file at {file_path} was not found.")
+        except ValueError as ve:
+            logging.error("Error: Issue loading Fire Crawl API key")
+            print(f"Error: {ve}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")

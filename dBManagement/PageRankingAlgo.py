@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
+import math
 
 """
 Filename: PageRankingAlgo.py
@@ -47,6 +48,7 @@ class WeightedGraph:
         self.node_order = []
         self.G = nx.DiGraph()
         self.try_graph = True
+        self.adjusted_score_value = None
 
     def add_node(self, name):
         if name not in self.nodes:
@@ -126,10 +128,17 @@ class WeightedGraph:
         #In future optomise this
         max_value = max(self.nodes, key=lambda node: self.nodes[node].visits)
         print("The winner is: "+ max_value)
+        self.adjusted_score(self.nodes[max_value], iterations)
         return max_value
         
+    def adjusted_score(self, Node, iterations):
+        normalizedScore = Node.visits/iterations
+        self.adjusted_score_value = normalizedScore * math.log(len(self.nodes)+1)
 
-
+    def return_adjusted_score(self):
+        print(self.adjusted_score_value)
+        return self.adjusted_score_value
+    
     def display_graph(self):
         if (not self.try_graph):
             print("Field is not on")
@@ -162,6 +171,7 @@ graph.add_edge("A", "C", 10)
 graph.add_edge("B", "C", 2)
 graph.get_random_node()
 graph.page_ranking_algorithm()
+graph.return_adjusted_score()
 graph.display_graph()
 #graph.page_ranking_algorithm()
 """

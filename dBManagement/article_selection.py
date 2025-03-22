@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from PageRankingAlgo import Node, WeightedGraph
 from core_db_component import DatabaseCoreComponent
 import logging
+from datetime import datetime, timedelta
 """
 Filename: table_creation.py
 
@@ -14,7 +15,8 @@ Date Created: 2025-01-24
 Purpose:
     -Inherits all attributes of the core_db_component class
     -Pulls all articles from article table and runs the pageranker algorithm
-    -Selects the most relevant article 
+    -Selects the most relevant article
+    -Cleans articles if the are expired past 2 days
     -Need to work on standard deviation
 """
 class articleSelector(DatabaseCoreComponent):
@@ -23,6 +25,36 @@ class articleSelector(DatabaseCoreComponent):
         self.country = country
         self.titles = []
         self.UID = []
+        self.relevant_article_index = None
+
+    def clean(self):
+        # SQL query to delete articles older than 2 days
+        delete_articles_query = """
+            DELETE FROM article
+            WHERE country = %s AND time < CURRENT_TIMESTAMP - INTERVAL '2 days'
+        """
+        
+        delete_dead_articles_query = """
+            DELETE FROM dead_article
+            WHERE time < CURRENT_TIMESTAMP - INTERVAL '2 days'
+        """
+
+        self.create_connection()
+        cur = self.conn.cursor()
+        try:
+            # Deleting articles and dead_articles older than 2 days
+            cur.execute(delete_articles_query, (self.country,))
+            cur.execute(delete_dead_articles_query, (self.country,))
+            
+            # Commit the transaction to apply changes
+            self.conn.commit()
+        except Exception as error:
+            self.conn.rollback()  # Rollback in case of error
+            logging.error("Error during deletion:", error)
+        finally:
+            if cur:
+                cur.close()
+            self.close_connection()
 
     def get_id_title_data(self):
         get_article_data = """
@@ -35,8 +67,8 @@ class articleSelector(DatabaseCoreComponent):
         try:
             cur.execute(get_article_data, (self.country,))  # Pass country safely
             rows = cur.fetchall()  # Store the result in self.Articles
-            self.UID = {row[0] for row in rows}  # Set of article_id
-            self.titles = " ".join(row[1] for row in rows)  # Concatenated titles
+            self.UID = [row[0] for row in rows]  # Set of article_id
+            self.titles = [row[1] for row in rows] # Concatenated titles
 
         except Exception as error:
             logging.error("Error while interacting with the database:", error)
@@ -44,6 +76,7 @@ class articleSelector(DatabaseCoreComponent):
             if cur:
                 cur.close()
         self.close_connection()
+        
 
     def cosineSimilarity(self):
         # Step 1: Vectorize the titles using TF-IDF
@@ -80,14 +113,22 @@ class articleSelector(DatabaseCoreComponent):
         print(f"Max Value: {max_value}")
 
     def perform_analysis(self):
+        self.clean()
         self.get_id_title_data()
         self.cosineSimilarity()
         self.zeroOut()
 
         self.graph = WeightedGraph()
-        self.graph.convert_matrix_to_graph()
-        self.relevant_article_index = self.graph.page_ranking_algorithm()
-        
+        self.graph.convert_matrix_to_graph(self.matrix)
+        self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
+        print(self.graph.return_adjusted_score())
+    
+    def return_UID(self):
+        if self.relevant_article_index:
+            return self.relevant_article_index
+        else:
+            print("PG not yet run")
+            return
 
     def display_graph(self):
         self.graph.display_graph()
