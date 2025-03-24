@@ -2,7 +2,10 @@ from core_db_component import DatabaseCoreComponent
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
-import instructor
+from firecrawl import FirecrawlApp
+import requests
+import json
+from bs4 import BeautifulSoup
 import os
 import logging
 
@@ -98,9 +101,11 @@ print(myobject.get_description_plus_city())
 """
 
 class fireCrawl(DatabaseCoreComponent):
-    def __init__(self):
+    def __init__(self, UID):
         super().__init__()
         self.FIRE_CRAWL_API = self.load_fire_crawl_api()
+        self.UID = UID
+        self.URL = None
 
     def load_fire_crawl_api(self):
         try:
@@ -120,3 +125,37 @@ class fireCrawl(DatabaseCoreComponent):
             print(f"Error: {ve}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+    def get_article_ref(self):
+        pass
+
+    def get_markdown(self):
+        app = FirecrawlApp(api_key=self.FIRE_CRAWL_API)
+        exit
+        response = app.scrape_url(url='https://www.cbsnews.com/news/u-s-to-revoke-legal-status-of-over-a-half-million-migrants-chnv/', params={
+            'formats': [ 'markdown' ],
+            "onlyMainContent": True
+        })
+        print(response)
+
+    def get_real_url(self):
+        resp = requests.get(self.get_real_url)
+        data = BeautifulSoup(resp.text, 'html.parser').select_one('c-wiz[data-p]').get('data-p')
+        obj = json.loads(data.replace('%.@.', '["garturlreq",'))
+
+        payload = {
+            'f.req': json.dumps([[['Fbv4je', json.dumps(obj[:-6] + obj[-2:]), 'null', 'generic']]])
+        }
+
+        headers = {
+        'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+        }
+
+        url = "https://news.google.com/_/DotsSplashUi/data/batchexecute"
+        response = requests.post(url, headers=headers, data=payload)
+        array_string = json.loads(response.text.replace(")]}'", ""))[0][2]
+        article_url = json.loads(array_string)[1]
+
+        print(article_url)
+        self.URL = article_url

@@ -22,11 +22,12 @@ import { useEvents } from '@/providers/event-provider';
 interface ConfirmationHistoryTableProps {
   setCameraStateBtn: (state: boolean) => void;
   cameraState: string;
+  isFocused: boolean;
 }
 
 export const ConfirmationHistoryTable: React.FC<
   ConfirmationHistoryTableProps
-> = ({setCameraStateBtn, cameraState}) => {
+> = ({setCameraStateBtn, cameraState, isFocused}) => {
   const { confirmationHistory } = useConfirmations();
   const [isFullView, setIsFullView] = useState(false);
   const [limitedHistory, setLimitedHistory] = useState<NanoConfirmation[]>([]);
@@ -82,7 +83,7 @@ export const ConfirmationHistoryTable: React.FC<
           )}
         </Button>
       </div>
-      <div className="overflow-hidden max-h-[75vh] md:max-w-[700px] lg:max-w-[800px] md:ml-auto justify-end flex">
+      {!isFocused && (<div className="overflow-hidden max-h-[75vh] md:max-w-[700px] lg:max-w-[800px] md:ml-auto justify-end flex">
         <table className="w-fit bg-transparent border border-transparent text-[14px]">
           <thead className="bg-transparent select-none text-gray-300">
             <tr>
@@ -181,7 +182,7 @@ export const ConfirmationHistoryTable: React.FC<
             )}
           </tbody>
         </table>
-      </div>
+      </div>)}
     </div>
   );
 };

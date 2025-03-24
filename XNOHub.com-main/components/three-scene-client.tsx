@@ -95,6 +95,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   const animationFrameId = useRef<number>(-1); // Store the animation frame ID in a ref
   const [theta, setTheta] = useState(0);
   const [phi, setPhi] = useState(0);
+  const [isFocused, setIsFocused ] = useState(false);
   
   useEffect(() => {
     if (serverDateTime) {
@@ -155,6 +156,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
 
     // On Zoom plane switching from one node to another
     else if(cameraState === "Focused"){
+      setIsFocused(true);
       if (cameraStateBtn) {
         setCameraStateBtn(false);
       }
@@ -171,6 +173,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     //Zooming Out
     else if(cameraState === "ZoomOut"){
       if(!cameraRef.current) return;
+      setIsFocused(false);
       console.log("Zooming Out")
       let start = cameraRef.current.position.clone()
       zoomFunc(start,trackPoint)
@@ -293,7 +296,8 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2"> {/*Get ride of */}
         <ConfirmationHistoryTable 
         setCameraStateBtn={setCameraStateBtn}
-        cameraState={cameraState}/>
+        cameraState={cameraState}
+        isFocused={isFocused}/>
       </div> {/*Get ride of */}
 
       <Canvas
