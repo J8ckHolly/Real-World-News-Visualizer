@@ -7,16 +7,35 @@ import { IRepData } from '@/types/index';
 
 interface ArcBetweenNodesProps {
   startNode: IRepData;
-  endNode: IRepData;
+  endNode: IRepData; 
   earthRadius: number;
 }
+
+export const MultipleArcs: React.FC<{
+  startNode: IRepData;
+  endNodes: IRepData[];
+  earthRadius: number;
+}> = ({ startNode, endNodes, earthRadius }) => {
+  return (
+    <>
+      {endNodes.map((endNode, i) => (
+        <ArcBetweenNodes
+          key={i}
+          startNode={startNode}
+          endNode={endNode}
+          earthRadius={earthRadius}
+        />
+      ))}
+    </>
+  );
+};
 
 const ArcBetweenNodes: React.FC<ArcBetweenNodesProps> = ({ startNode, endNode, earthRadius }) => {
   const startPos = latLongToVector3(startNode.latitude, startNode.longitude, earthRadius);
 
-  const endPos = latLongToVector3(endNode.latitude, endNode.longitude, earthRadius);
+  const endPos = latLongToVector3(endNode.latitude, endNode.longitude, earthRadius); 
 
-  const arcPoints = createGreatCircleArc(startPos, endPos, earthRadius);
+  const arcPoints = createGreatCircleArc(startPos, endPos, earthRadius); 
 
   // State for controlling the progress of the pulsating effect
   const [progress, setProgress] = useState(0);
@@ -32,6 +51,7 @@ const ArcBetweenNodes: React.FC<ArcBetweenNodesProps> = ({ startNode, endNode, e
     });
   });
 
+  //Start Here
   // Calculate the visible portion of the arc based on progress
   const visibleArcLength = progress * getTotalArcLength(arcPoints);
   let currentLength = 0;

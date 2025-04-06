@@ -1,7 +1,8 @@
 import React, { useMemo, useCallback, useRef } from 'react';
 import * as THREE from 'three';
-import { IRepData } from '@/types/index';
+import { IRepData,  CountryNameCords} from '@/types/index';
 import NetworkArcs from './network-arc';
+import { MultipleArcs } from './arcBetweenNodes';
 import ArcBetweenNodes from './arcBetweenNodes';
 
 interface NanoRepNodesProps {
@@ -10,6 +11,8 @@ interface NanoRepNodesProps {
   onNodeHover: (nodeRepsGeoInfo: IRepData | null) => void;
   onNodeClick: (nodeRepsGeoInfo: IRepData | null) => void;
 }
+
+
 
 const representativeData: IRepData = {
   account: "nano_3rep1234567890abcdefghijklmnopqrstuvwx",
@@ -91,6 +94,8 @@ const limaRepresentativeData: IRepData = {
   assigned_city: true,
 };
 
+const NodeArray = [yucatanRepresentativeData, limaRepresentativeData, rioRepresentativeData]
+
 const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
   ({ repsGeoInfo, earthRadius, onNodeHover, onNodeClick }) => {
     const earthRadiusRef = useRef(earthRadius);
@@ -104,6 +109,18 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
           earthRadiusRef.current
         ),
         color: new THREE.Color(0x1a6dd4)
+      }));
+    }, [repsGeoInfo]);
+
+    const myNodes = useMemo(() => {
+      return NodeArray.map((rep) => ({
+        ...rep,
+        position: calculatePosition(
+          rep.latitude,
+          rep.longitude,
+          earthRadiusRef.current
+        ),
+        color: new THREE.Color(0x800080)
       }));
     }, [repsGeoInfo]);
 
@@ -133,6 +150,7 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
           />
         ))}
         <NetworkArcs nodes={nodes} earthRadius={earthRadiusRef.current} />
+
         <Node
           key={representativeData.account}
           node={{
@@ -144,24 +162,19 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
           onHover={handleNodeHover}
           onClick={handleNodeClick}
         />
-        <Node
-          key={yucatanRepresentativeData.account}
-          node={{
-            ...yucatanRepresentativeData,
-            position: calculatePosition(
-              yucatanRepresentativeData.latitude,
-              yucatanRepresentativeData.longitude,
-              earthRadiusRef.current
-            ),
-            color: new THREE.Color(0x00ff00) // Green color for differentiation
-          }}
-          earthRadius={earthRadiusRef.current}
-          onHover={handleNodeHover}
-          onClick={handleNodeClick}
-        />
-        <ArcBetweenNodes
-        startNode={yucatanRepresentativeData}
-        endNode={representativeData}
+        {myNodes.map((node, index) => (
+          <Node
+            key={node.account}
+            node={node}
+            earthRadius={earthRadiusRef.current}
+            onHover={handleNodeHover}
+            onClick={handleNodeClick}
+          />
+        ))}
+
+        <MultipleArcs
+        startNode={representativeData}
+        endNodes={myNodes}
         earthRadius={earthRadiusRef.current}/>
 
       </group>

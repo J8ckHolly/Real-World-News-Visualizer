@@ -126,3 +126,9 @@ export interface countryEvent {
   title: string;
   time: number
 }
+
+export interface CountryNameCords {
+  countryName: string;
+  latitude: number;
+  longitude: number;
+}
