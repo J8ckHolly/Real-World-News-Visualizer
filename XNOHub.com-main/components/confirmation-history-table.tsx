@@ -17,16 +17,23 @@ import { formatRelativeTime } from '@/lib/format-relative-time';
 import { NanoConfirmation } from '@/types/index';
 import { Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-react';
 import { APP_CONFIG } from '@/constants/config';
+import { useEvents } from '@/providers/event-provider';
 
-interface ConfirmationHistoryTableProps {}
+interface ConfirmationHistoryTableProps {
+  setCameraStateBtn: (state: boolean) => void;
+  cameraState: string;
+  isFocused: boolean;
+}
 
 export const ConfirmationHistoryTable: React.FC<
   ConfirmationHistoryTableProps
-> = () => {
+> = ({setCameraStateBtn, cameraState, isFocused}) => {
   const { confirmationHistory } = useConfirmations();
   const [isFullView, setIsFullView] = useState(false);
   const [limitedHistory, setLimitedHistory] = useState<NanoConfirmation[]>([]);
   const [showLessRows, setShowLessRows] = useState(true);
+  //const { eventHistory } = useEvents();
+  
 
   const displayedConfirmations = useMemo(() => {
     if (showLessRows && window.innerWidth < 768) {
@@ -37,36 +44,25 @@ export const ConfirmationHistoryTable: React.FC<
 
   useEffect(() => {
     setLimitedHistory(displayedConfirmations.slice(0, 100));
+    //console.log(eventHistory.slice(0,1));
   }, [displayedConfirmations]);
 
   const toggleView = () => {
     setIsFullView(!isFullView);
   };
 
-  const toggleRowCount = () => {
-    setShowLessRows(!showLessRows);
-  };
-
   return (
     <div className="space-y-4 w-full md:w-auto pointer-events-none select-none">
       <div className="flex justify-end gap-2 pointer-events-auto">   
         <Button
-          onClick={() => {}}
+          onClick={() => {setCameraStateBtn(true);}
+          }
           variant="outline"
           size="sm"
           className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
         >
-          {isFullView ? (
-            <>
-              <Minimize2 className="w-4 h-4" />
-              <span className="hidden md:inline">Min View</span>
-            </>
-          ) : (
-            <>
-              <Maximize2 className="w-4 h-4" />
-              <span className="hidden md:inline">Full View</span>
-            </>
-          )}
+          <Maximize2 className="w-4 h-4" />
+          <span className="hidden md:inline">{cameraState}</span>
         </Button>
         <Button
           onClick={toggleView}
@@ -87,7 +83,7 @@ export const ConfirmationHistoryTable: React.FC<
           )}
         </Button>
       </div>
-      <div className="overflow-hidden max-h-[75vh] md:max-w-[700px] lg:max-w-[800px] md:ml-auto justify-end flex">
+      {!isFocused && (<div className="overflow-hidden max-h-[75vh] md:max-w-[700px] lg:max-w-[800px] md:ml-auto justify-end flex">
         <table className="w-fit bg-transparent border border-transparent text-[14px]">
           <thead className="bg-transparent select-none text-gray-300">
             <tr>
@@ -186,7 +182,7 @@ export const ConfirmationHistoryTable: React.FC<
             )}
           </tbody>
         </table>
-      </div>
+      </div>)}
     </div>
   );
 };

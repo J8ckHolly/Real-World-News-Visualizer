@@ -43,15 +43,15 @@ def slerp(p, q, t):
     interp_point = a * p_norm + b * q_norm
     
     # Scale the result to the magnitude of the original q (off-surface point)
-    q_mag = np.linalg.norm(q)  # Get the magnitude of q (the off-surface point)
+    interp_point = interp_point / np.linalg.norm(interp_point)  # Get the magnitude of q (the off-surface point)
     return interp_point  # Scale the interpolated result
 
 # Input coordinates for two points (x, y, z)
 # First point on the surface of the sphere (unit vector)
-x1, y1, z1 = 1, 0, 0  # Example point 1 (on the surface, unit vector)
+x1, y1, z1 = -.688, 1.44, 1.22  # Example point 1 (on the surface, unit vector)
 
 # Second point off the surface of the sphere (non-unit vector)
-x2, y2, z2 = 2, 1, 1  # Example point 2 (not a unit vector)
+x2, y2, z2 = 0, 2, 4  # Example point 2 (not a unit vector)
 
 # Create the points as numpy arrays
 p = np.array([x1, y1, z1])  # First point (on the sphere)
@@ -61,11 +61,12 @@ def slerp_points(p,q):
     num_points = 10
     liftrate = 1.2
     q_mag = np.linalg.norm(q)
+    p_mag = np.linalg.norm(p)
     # Generate interpolated points
     interpolated_points = []
     for t in np.linspace(0, 1, num_points):
         point = slerp(p, q, t)  # Interpolate between p and q
-        liftrate = math.sin(t*math.pi/2) * ( q_mag-1) + 1
+        liftrate = math.sin(t*math.pi/2) * ( q_mag-p_mag) + p_mag
         point = point * liftrate
         interpolated_points.append(point)
     for points in interpolated_points:

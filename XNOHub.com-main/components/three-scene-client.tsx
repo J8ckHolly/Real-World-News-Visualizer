@@ -24,204 +24,219 @@ import { Vector3 } from 'three';
 import { Button } from '@/components/ui/button';
 import { Rocket, Eye, Globe } from 'lucide-react'; // Understand
 import { APP_CONFIG } from '@/constants/config'; //Understand - Keep
+import { latLongToVector3 } from './network-arc';
 
+const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number): THREE.Vector3 => {
+  const startNormal = start.clone().normalize();
+  const endNormal = end.clone().normalize(); 
 
-
-function getRandomPositionOnGlobe(radius: number = 1.2): Vector3 {
-  const phi = Math.random() * Math.PI * 2;
-  const theta = Math.acos(Math.random() * 2 - 1);
-
-  const x = radius * Math.sin(theta) * Math.cos(phi);
-  const y = radius * Math.sin(theta) * Math.sin(phi);
-  const z = radius * Math.cos(theta);
-
-  return new Vector3(x, y, z);
-}
-
-const calculatePosition = (
-  lat: number,
-  long: number,
-  radius: number
-): THREE.Vector3 => {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (long + 180) * (Math.PI / 180);
-  const x = -radius * Math.sin(phi) * Math.cos(theta);
-  const y = radius * Math.cos(phi);
-  const z = radius * Math.sin(phi) * Math.sin(theta);
-  return new THREE.Vector3(x, y, z);
-}; 
-
-const calculatePolarCoordinates = (
-  x: number, 
-  y: number, 
-  z: number
- ): THREE.Vector3 => {
-  const radius = Math.sqrt(x * x + y * y + z * z); // Calculate the radial distance
+  const start_magnitude = start.length();
+  const end_magnitude = end.length();
   
-  const theta = Math.atan2(y, x); // Azimuthal angle (in radians) in the XY-plane
-  
-  const psi = Math.acos(z / radius); // Polar angle (in radians) from the Z-axis
-  
-  return new THREE.Vector3(radius, theta, psi);
+  const dot = startNormal.dot(endNormal);
+  const omega = Math.acos(Math.min(Math.max(dot, -1), 1));
+  const sinOmega = Math.sin(omega);
+
+  const liftFactor = Math.sin(t * Math.PI/2) * (end_magnitude - start_magnitude) + start_magnitude; 
+  if (sinOmega === 0) {
+    return start.clone();
+  } else {
+    const weight0 = Math.sin((1 - t) * omega) / sinOmega;
+    const weight1 = Math.sin(t * omega) / sinOmega;
+    const point = new THREE.Vector3()
+      .addScaledVector(startNormal, weight0)
+      .addScaledVector(endNormal, weight1)
+      .normalize()
+      .multiplyScalar(liftFactor); //Might be Implemented differently
+
+    return point;
+  }
 };
 
-const getCameraPolarPos = () => {return;}; //Depent on hoverNode
-const calculateNodePolarPos = () => {return;} //Depent on hoverNode 
-
+function rotatePointAboutX(point: THREE.Vector3): THREE.Vector3 {
+  const angleDegrees = 23.5
+  
+  // Convert degrees to radians
+  const angleRadians = THREE.MathUtils.degToRad(angleDegrees);
+  
+  // Create a rotation matrix around the X axis
+  const rotationMatrix = new THREE.Matrix4();
+  rotationMatrix.makeRotationX(angleRadians);
+  
+  // Apply the rotation to the point
+  const rotatedPoint = point.clone().applyMatrix4(rotationMatrix);
+  
+  return rotatedPoint;
+}
 
 interface ThreeSceneClientProps {
   repsGeoInfo: IRepData[];
   serverDateTime: Date | null;
 }
 
+type ButtonState = "Spin" | "Stop" | "ZoomIn" | "Focused" | "ZoomOut";
+
 const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   repsGeoInfo,
   serverDateTime
 }) => {
-  const EarthRadiusInKm = 6357; // Earth's equatorial radius in kilometers
   const lightRef = useRef<THREE.DirectionalLight>(null);
   const [simulationTime, setSimulationTime] = useState<Date>(
     serverDateTime || new Date()
   );
   const [hoveredNode, setHoveredNode] = useState<IRepData | null>(null);
+  const [clickedNode, setClickedNode] = useState<IRepData | null>(null);
   const { confirmationHistory: confirmations } = useConfirmations();
-  const [launchQueue, setLaunchQueue] = useState<Vector3[]>([]);
-  const [NodePos, setNodePos] = useState<THREE.Vector3>(new THREE.Vector3());
-  const [NodePosPolar, setNodePosPolar] = useState<THREE.Vector3>(new THREE.Vector3());
-  const [hoverNodePol, setHoverNodePol] = useState<THREE.Vector3>(new THREE.Vector3());
-  const [isRocketView, setIsRocketView] = useState(false);
+  const [trackPoint, setTrackPoint] = useState<THREE.Vector3>(new THREE.Vector3());
+  const [cameraState, setCameraState] = useState<ButtonState>("Stop");
+  const [cameraStateBtn, setCameraStateBtn] = useState(false);
+  const [enableRotate, setEnableRotate] = useState(true);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-  const [activeRocketIndex, setActiveRocketIndex] = useState<number | null>(
-    null
-  ); // Track the active rocket index
-  const [rocketCount, setRocketCount] = useState(0);
-  const rocketManagerRef = useRef<{
-    addRocket: (position: Vector3) => void;
-  } | null>(null);
-  const [distanceFromEarth, setDistanceFromEarth] = useState<number>(0); // State to hold distance
-  const [isStarlinkView, setIsStarlinkView] = useState(false);
-  const [activeStarlinkIndex, setActiveStarlinkIndex] = useState<number | null>(
-    null
-  );
+  const animationFrameId = useRef<number>(-1); // Store the animation frame ID in a ref
+  const [theta, setTheta] = useState(0);
+  const [phi, setPhi] = useState(0);
+  const [isFocused, setIsFocused ] = useState(false);
   
-  useEffect(() =>{
-  if (hoveredNode) {
-    setNodePos(calculatePosition(hoveredNode.latitude, hoveredNode.longitude, 1));
-    setNodePosPolar(calculatePolarCoordinates(NodePos.x, NodePos.y, NodePos.z));
-  }
-}, [hoveredNode]
-  );
-
-  useEffect(() =>{
-    if(cameraRef.current){
-    setHoverNodePol(calculatePolarCoordinates(cameraRef.current.position.x,
-      cameraRef.current.position.y,
-      cameraRef.current.position.z
-    ))
-  }
-  }, [hoveredNode]
-  );
-
-
-
-  const moveToNextRocket = useCallback(() => {
-    if (isRocketView && rocketCount > 0) {
-      setActiveRocketIndex((prevIndex) => {
-        if (prevIndex === null) return 0;
-        return (prevIndex + 1) % rocketCount;
-      });
-    }
-  }, [isRocketView, rocketCount]);
-
-  const toggleStarlinkView = useCallback(() => {
-    setIsStarlinkView((prev) => !prev);
-    if (!isStarlinkView) {
-      setActiveStarlinkIndex(0);
-    } else {
-      setActiveStarlinkIndex(null);
-    }
-    setIsRocketView(false); // Disable rocket view when entering starlink view
-  }, [isStarlinkView]);
-
-  const moveToNextStarlink = useCallback(() => {
-    if (isStarlinkView) {
-      setActiveStarlinkIndex((prev) => {
-        if (prev === null) return 0;
-        return (prev + 1) % 6; // Assuming 6 satellites
-      });
-    }
-  }, [isStarlinkView]);
-
   useEffect(() => {
     if (serverDateTime) {
       setSimulationTime(serverDateTime);
     }
   }, [serverDateTime]);
 
-
-  const handleRocketComplete = (id: string) => {
-    setRocketCount((prevCount) => prevCount - 1);
-  };
-
-  const handleRocketCountChange = useCallback((count: number) => {
-    setRocketCount(count);
-    if (count === 0) {
-      setIsRocketView(false);
-      setActiveRocketIndex(null);
-    }
-  }, []);
-
   useEffect(() => {
-    if (launchQueue.length > 0 && activeRocketIndex === null) {
-      setActiveRocketIndex(0); // Set the first rocket as active only if it's null
-    }
-  }, [launchQueue, activeRocketIndex]); // Add activeRocketIndex to dependencies
-
-  const lookAtNode = useCallback((node: IRepData) => {
-    if (cameraRef.current) {
-      // Adjust the camera's position slightly so it's not inside the node
-      /*
-      const offset = EarthRadiusInKm + 50; // Distance from the node
-      const targetPosition = new THREE.Vector3(node.latitude, node.longitude, 0);
-      const cameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y, offset);
-      const currentCameraPosition = cameraRef.current.position.clone();
-      const direction = targetPosition.clone().sub(currentCameraPosition).normalize();
-      const lerpSpeed = 0.1; // Adjust this value to control how fast the camera moves
-      cameraRef.current.position.lerp(cameraPosition, lerpSpeed);
-      const lookAtRotation = new THREE.Quaternion().setFromUnitVectors(
-        cameraRef.current.getWorldDirection(new THREE.Vector3()).normalize(), // Current camera direction
-        direction // Desired direction (towards the node)
-      );
-      cameraRef.current.quaternion.slerp(lookAtRotation, lerpSpeed);
-      cameraRef.current.lookAt(targetPosition);
-      cameraRef.current.lookAt(0, 0, 0); // Make the camera look at the node
-      */
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hoveredNode) {
-      lookAtNode(hoveredNode);
-    }
-  }, [hoveredNode, lookAtNode]);
-
-  // New function to reset to Earth view
-  const resetToEarthView = () => {
-    setIsRocketView(false);
-
-    setTimeout(() => {
-      if (cameraRef.current) {
-        cameraRef.current.position.set(0, 0, 5);
-        cameraRef.current.lookAt(new THREE.Vector3(0, 0, 0)); // Look at the center of the Earth
+    console.log("ButtonPressed: ",{cameraStateBtn});
+    setCameraState((prevCameraState) => {
+      if (prevCameraState === "Spin" && cameraStateBtn === true) {
+        setEnableRotate((prev) => !prev);
+        return "Stop";
+      } else if (prevCameraState === "Stop" && cameraStateBtn === true) {
+        setEnableRotate((prev) => !prev);
+        return "Spin";
+      } else if (prevCameraState === "Stop" && clickedNode) {
+        return "ZoomIn";
+      } else if (prevCameraState === "ZoomIn") {
+        return "Focused";
+      } else if (prevCameraState === "Focused" && cameraStateBtn === true) {
+        return "ZoomOut";
+      } else if (prevCameraState === "ZoomOut") {
+        return "Stop";
       }
-    }, 100);
+       
+      return prevCameraState;
+    });
+  }, [clickedNode, cameraStateBtn]);
+
+  
+  // FSM for the camera
+  useEffect(() => {
+    //Spinning Actionsf
+    if (cameraState==="Spin") {
+      console.log("Rotating");
+      setCameraStateBtn((prev) => !prev);
+      rotatingCamera();
+    }
+    //Stop State
+    else if(cameraState==="Stop") {
+      console.log("Stopped");
+      // Cleanup the animation if rotation is disabled
+      setCameraStateBtn((prev) => !prev);
+      cancelAnimationFrame(animationFrameId.current);
+    }
+    //Zooming from track to zoom plane
+    else if(cameraState === "ZoomIn"){
+      if (!clickedNode || !cameraRef.current) return;
+      console.log("Zoomed In");
+
+      setTrackPoint(cameraRef.current.position.clone())
+      let start = cameraRef.current.position.clone()
+      let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2);
+      eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
+      zoomFunc(start,eventExtendedPoint)
+    }
+
+    // On Zoom plane switching from one node to another
+    else if(cameraState === "Focused"){
+      setIsFocused(true);
+      if (cameraStateBtn) {
+        setCameraStateBtn(false);
+      }
+
+      if (!clickedNode || !cameraRef.current) return;
+      console.log("Point Switching");
+
+      let start = cameraRef.current.position.clone()
+      let eventExtendedPoint = latLongToVector3(clickedNode.latitude, clickedNode.longitude, 2); 
+      eventExtendedPoint = rotatePointAboutX(eventExtendedPoint);
+      zoomFunc(start,eventExtendedPoint)
+    }
+
+    //Zooming Out
+    else if(cameraState === "ZoomOut"){
+      if(!cameraRef.current) return;
+      setIsFocused(false);
+      console.log("Zooming Out")
+      let start = cameraRef.current.position.clone()
+      zoomFunc(start,trackPoint)
+      
+    }
+    // Cleanup on component unmount or when effect is cleaned up
+    return () => cancelAnimationFrame(animationFrameId.current);
+  }, [clickedNode, cameraState]);
+
+
+  const rotatingCamera = () => {
+    const radius = 3;
+    const speed = 0.005;
+
+    const animateCamera = () => {
+      if (cameraRef.current) {
+        setTheta((prevTheta) => {
+          const newTheta = prevTheta + speed;
+          cameraRef.current!.position.x = radius * Math.cos(newTheta);
+          cameraRef.current!.position.z = radius * Math.sin(newTheta);
+          cameraRef.current!.lookAt(0, 0, 0);
+          return newTheta;  // Return the new Theta to update the state
+        });
+        animationFrameId.current = requestAnimationFrame(animateCamera);
+      }
+    };
+
+    // Cancel any previous animation frame before starting a new one
+    cancelAnimationFrame(animationFrameId.current);
+
+    // Start the new animation loop
+    animationFrameId.current = requestAnimationFrame(animateCamera);
+  };
+  
+  const zoomFunc = (start: THREE.Vector3, end: THREE.Vector3) => {
+    console.log(cameraState)
+    const numPoints = 100;
+    let t = 0; // Local interpolation state instead of using React state
+    const animate = () => {
+      if (t > 1) {
+        console.log('Done')
+        setClickedNode(null);
+        setCameraStateBtn(false);
+        return;
+      }
+  
+      const interpolatedPoint = SLERPZOOM(start, end, t);  //Change start and end
+      cameraRef.current!.position.copy(interpolatedPoint);
+  
+      t += 1 / numPoints;
+      animationFrameId.current = requestAnimationFrame(animate);
+    };
+  
+    cancelAnimationFrame(animationFrameId.current); // Ensure previous animation is stopped
+    animationFrameId.current = requestAnimationFrame(animate);
   };
 
+  
   // Memoize camera settings
   const cameraSettings = useMemo(
     () => ({
       fov: 45,
-      position: [0, 2, 4] as [number, number, number]
+      position: [3, 2, 0] as [number, number, number]
     }),
     []
   );
@@ -256,13 +271,13 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
   // Memoize OrbitControls props
   const orbitControlsProps = useMemo(
     () => ({
-      enableRotate: !isRocketView && !isStarlinkView,
+      enableRotate: !enableRotate,
       rotateSpeed: 0.5,
-      enableZoom: !isRocketView && !isStarlinkView,
+      enableZoom: true,
       zoomSpeed: 0.6,
       enablePan: false
     }),
-    [isRocketView, isStarlinkView]
+    []
   );
 
   if (!serverDateTime) {
@@ -279,46 +294,10 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
       </div>
 
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2"> {/*Get ride of */}
-        <div className="flex flex-row gap-2">
-          {/* New button to reset to Earth view */}
-          {distanceFromEarth > 10 && (
-            <Button
-              onClick={resetToEarthView}
-              variant="outline"
-              size="sm"
-              className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
-            >
-              Back to Earth
-            </Button>
-          )}
-          
-          {isStarlinkView && (
-            <Button
-              onClick={moveToNextStarlink}
-              variant="outline"
-              size="sm"
-              className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
-            >
-              <Eye className="w-4 h-4" />
-              <span className="hidden md:inline">Next StarLink</span>
-            </Button>
-          )}
-          {isRocketView && (
-            <Button
-              onClick={moveToNextRocket}
-              variant="outline"
-              size="sm"
-              className="flex select-none items-center gap-2 bg-transparent hover:bg-transparent hover:text-[#209ce9]"
-            >
-              <Eye className="w-4 h-4" />
-              <span className="hidden md:inline">Next Rocket</span>
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2 text-white">
-          Active <Rocket className="w-4 h-4 text-red-600" /> {rocketCount}
-        </div>
-        <ConfirmationHistoryTable />
+        <ConfirmationHistoryTable 
+        setCameraStateBtn={setCameraStateBtn}
+        cameraState={cameraState}
+        isFocused={isFocused}/>
       </div> {/*Get ride of */}
 
       <Canvas
@@ -353,71 +332,23 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           repsGeoInfo={repsGeoInfo} 
           manualTime={simulationTime}
           onNodeHover={setHoveredNode}
+          onNodeClick={setClickedNode}
         /> {/* for repsGeoInfo put null to cut the connections */}
         <CloudMesh />
         
-        {/* Always render StarlinkMesh 
-        <StarlinkMesh
-          count={6}
-          isStarlinkView={isStarlinkView}
-          activeStarlinkIndex={activeStarlinkIndex}
-          cameraRef={cameraRef}
-        />*/}
-
-        {/*<DonationAnimation />*/}
-
-        {/*<RocketAnimationManager
-          ref={rocketManagerRef}
-          cameraRef={cameraRef}
-          onRocketComplete={handleRocketComplete}
-          onRocketCountChange={handleRocketCountChange}
-          isRocketView={isRocketView}
-          activeRocketIndex={activeRocketIndex}
-          setActiveRocketIndex={setActiveRocketIndex}
-          setDistanceFromEarth={setDistanceFromEarth}
-        />*/}
       </Canvas>
-      {/* Node Info */}
-      <div className="absolute bottom-1/2 left-4 z-10">
-        {cameraRef.current && (
+      <div className="absolute bottom-2 left-4 z-10">
+        {hoveredNode && (
           <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
-            <h3 className="text-lg font-bold mb-2"> Node Position Cart:</h3>
-            <p>X: {NodePos.x}</p>
-            <p>Y: {NodePos.y}</p>
-            <p>Z: {NodePos.z}</p>
-            {/*<p>{hoveredNode.latitude}</p>*/}
+            <h3 className="text-lg font-bold mb-2">
+            </h3>
+            <p>Latitude: {hoveredNode.latitude}</p>
+            <p>Longitude: {hoveredNode.longitude}</p>
           </div>
         )}
       </div>
-
       {/* Node Info */}
-      <div className="absolute bottom-1/3 left-4 z-10">
-        {cameraRef.current && (
-          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
-            <h3 className="text-lg font-bold mb-2"> Node Position Polar:</h3>
-            <p>Radians: {NodePosPolar.x}</p>
-            <p>Theta: {NodePosPolar.y}</p>
-            <p>Psi: {NodePosPolar.z}</p>
-            {/*<p>{hoveredNode.latitude}</p>*/}
-          </div>
-        )}
-      </div>
-
-      {/* Node Info */}
-      <div className="absolute bottom-40 left-4 z-10">
-        {cameraRef.current && (
-          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
-            <h3 className="text-lg font-bold mb-2"> Camera Position Polar:</h3>
-            <p>Radians: {hoverNodePol.x}</p>
-            <p>Theta: {hoverNodePol.y}</p>
-            <p>Psi: {hoverNodePol.z}</p>
-            {/*<p>{hoveredNode.latitude}</p>*/}
-          </div>
-        )}
-      </div>
-
-      {/* Node Info */}
-      <div className="absolute bottom-4 left-4 z-10">
+      <div className="absolute bottom-20 left-4 z-10">
         {cameraRef.current && (
           <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
             <h3 className="text-lg font-bold mb-2"> Camera Position Cart:</h3>

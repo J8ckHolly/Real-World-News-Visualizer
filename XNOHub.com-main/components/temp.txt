@@ -1,0 +1,51 @@
+{/* Node Info */}
+      <div className="absolute bottom-1/2 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Node Position Cart:</h3>
+            <p>X: {NodePos.x}</p>
+            <p>Y: {NodePos.y}</p>
+            <p>Z: {NodePos.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>
+
+      {/* Node Info */}
+      <div className="absolute bottom-1/3 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Node Position Polar:</h3>
+            <p>Radians: {NodePosPolar.x}</p>
+            <p>Theta: {NodePosPolar.y}</p>
+            <p>Psi: {NodePosPolar.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>
+
+      {/* Node Info */}
+      <div className="absolute bottom-40 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Camera Position Polar:</h3>
+            <p>Radians: {hoverNodePol.x}</p>
+            <p>Theta: {hoverNodePol.y}</p>
+            <p>Psi: {hoverNodePol.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>
+
+      {/* Node Info */}
+      <div className="absolute bottom-4 left-4 z-10">
+        {cameraRef.current && (
+          <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-lg font-bold mb-2"> Camera Position Cart:</h3>
+            <p>X: {cameraRef.current.position.x}</p>
+            <p>Y: {cameraRef.current.position.y}</p>
+            <p>Z: {cameraRef.current.position.z}</p>
+            {/*<p>{hoveredNode.latitude}</p>*/}
+          </div>
+        )}
+      </div>

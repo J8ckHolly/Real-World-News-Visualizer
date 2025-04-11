@@ -5,6 +5,7 @@ from link_parser import RssParser
 from article_selection import articleSelector
 import logging
 
+"""
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -15,7 +16,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
+"""
 
 #systemDelete = TableDeletion()
 #systemInit = TableCreation()
@@ -23,5 +24,7 @@ logger = logging.getLogger(__name__)
 #myParser.print_time()
 #myParser.insert_entry()
 #myParser.delete_table_data()
-#mySelector = articleSelector("FR")
+mySelector = articleSelector("US")
 #mySelector.get_id_title_data()
+#mySelector.clean()
+mySelector.perform_analysis()

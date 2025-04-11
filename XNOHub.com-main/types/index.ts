@@ -120,3 +120,15 @@ export interface NanoConfirmation {
     };
   };
 }
+
+export interface countryEvent {
+  country: string;
+  title: string;
+  time: number
+}
+
+export interface CountryNameCords {
+  countryName: string;
+  latitude: number;
+  longitude: number;
+}
