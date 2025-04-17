@@ -1,8 +1,8 @@
 import feedparser
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from PageRankingAlgo import Node, WeightedGraph
-from core_db_component import DatabaseCoreComponent
+from parserComponents.PageRankingAlgo import WeightedGraph
+from dataBaseComponents.core_db_component import DatabaseCoreComponent
 import logging
 from datetime import datetime, timedelta
 """
@@ -129,6 +129,9 @@ class articleSelector(DatabaseCoreComponent):
         else:
             print("PG not yet run")
             return
+    
+    def get_similarity(self, node):
+        pass
 
     def display_graph(self):
         self.graph.display_graph()

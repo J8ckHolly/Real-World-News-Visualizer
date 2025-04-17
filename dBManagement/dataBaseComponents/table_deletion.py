@@ -1,4 +1,4 @@
-from core_db_component import DatabaseCoreComponent
+from .core_db_component import DatabaseCoreComponent
 from psycopg2 import sql
 import logging
 
@@ -10,15 +10,19 @@ Author: Jack Holly
 Date Created: 2025-01-24
 
 Purpose:
-    -Inherits all attributes of the core_db_component class
-    -creates all tables for the system
+    -
+    -
+    -
+    -@Inputs: None
+    -@Outputs: None
+    -@Actions: Deletes all Tables in the database
 """
-
 class TableDeletion(DatabaseCoreComponent):
     def __init__(self):
         super().__init__()
         self.delete_tables()
         self.__del__()
+        
     
     def delete_tables(self):
         try:
@@ -53,3 +57,10 @@ class TableDeletion(DatabaseCoreComponent):
             if cur:
                 cur.close()
         self.close_connection()
+
+
+# Example usage (for testing)
+if __name__ == "__main__":
+    print("hi")
+    tableDel = TableDeletion
+    

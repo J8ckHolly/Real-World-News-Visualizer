@@ -1,4 +1,4 @@
-from core_db_component import DatabaseCoreComponent
+from dBManagement.dataBase.core_db_component import DatabaseCoreComponent
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
