@@ -36,7 +36,8 @@ def testing_menu():
         print("6. PageRank")
         print("7. Get Similarity")
         print("8. Show Table Data")
-        print("9. Return to Main Menu")
+        print("9. Run Practice Scheduler")
+        print("10. Return to Main Menu")
 
         choice = input("Enter a number (1-9): ").strip()
 
@@ -55,7 +56,7 @@ def testing_menu():
         elif choice == "5":
             print("Creating new listener...")
             country = input("Enter the Country for listening to events: ")
-            RssParser(country)
+            RssParser(country, True)
         elif choice == "6":
             print("Running PageRank...")
             # Call your function to run PageRank here
@@ -65,7 +66,9 @@ def testing_menu():
         elif choice == "8":
             print("Showing table data...")
             ShowTableData()
-        elif choice == "9":
+        elif choice =="9":
+            print("Running practice Scheduler")
+        elif choice == "10":
             print("Returning to main menu...\n")
             break
         else:

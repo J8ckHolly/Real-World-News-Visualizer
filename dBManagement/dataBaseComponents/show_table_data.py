@@ -19,11 +19,10 @@ class ShowTableData(DatabaseCoreComponent):
     def __init__(self):
         super().__init__()
         self.tableNames = []  # Initialize the list to hold table names
-        self.get_table_names()
-        self.display_table()
+        self.show_table_data()
         self.__del__()
 
-    def get_table_names(self):
+    def show_table_data(self):
         try:
             self.create_connection()
             cur = self.conn.cursor()
@@ -38,7 +37,31 @@ class ShowTableData(DatabaseCoreComponent):
             tables = cur.fetchall()
             for table in tables:
                 self.tableNames.append(table[0])
-                
+            
+            #Print Table Names
+            print("\nAvailable Table Names:")
+            for table in self.tableNames:
+                print("-", table)
+
+            choice = input("Enter table to show data: ").strip()
+
+            if choice not in self.tableNames:
+                print(f"'{choice}' is not a valid table name.")
+                return
+
+            # Safely insert table name
+            query = sql.SQL("SELECT * FROM {} LIMIT 10").format(sql.Identifier(choice))
+            cur.execute(query)
+            rows = cur.fetchall()
+
+            # Get column names
+            colnames = [desc[0] for desc in cur.description]
+
+            print(f"\nShowing up to 10 rows from table: {choice}")
+            print(" | ".join(colnames))
+            for row in rows:
+                print(" | ".join(str(value) for value in row))
+            
         except Exception as error:
             logging.info("Error while interacting with the database: %s", error)
         finally:
@@ -46,40 +69,7 @@ class ShowTableData(DatabaseCoreComponent):
                 cur.close()
             self.close_connection()
 
-    def display_table(self):
-        print("Available Table Names:")
-        for table in self.tableNames:
-            print("-", table)
-
-        choice = input("Enter table to show data: ").strip()
-
-        if choice not in self.tableNames:
-            print(f"'{choice}' is not a valid table name.")
-        else:
-            try:
-                self.create_connection()
-                cur = self.conn.cursor()
-
-                # Safely insert table name
-                query = sql.SQL("SELECT * FROM {} LIMIT 10").format(sql.Identifier(choice))
-                cur.execute(query)
-                rows = cur.fetchall()
-
-                # Get column names
-                colnames = [desc[0] for desc in cur.description]
-
-                print(f"\nShowing up to 10 rows from table: {choice}")
-                print(" | ".join(colnames))
-                for row in rows:
-                    print(" | ".join(str(value) for value in row))
-
-            except Exception as error:
-                logging.info("Error fetching data from table '%s': %s", choice, error)
-                print(f"Error fetching data from table '{choice}':", error)
-            finally:
-                if cur:
-                    cur.close()
-                self.close_connection()
+    
 
 
 # Example usage (for testing)
