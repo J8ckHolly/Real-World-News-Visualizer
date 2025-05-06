@@ -3,6 +3,8 @@ import logging
 import os
 from dataBaseComponents.table_deletion import TableDeletion 
 from dataBaseComponents.table_creation import TableCreation
+from dataBaseComponents.core_db_component import DatabaseCoreComponent
+from dataBaseComponents.show_table_data import ShowTableData
 from parserComponents.article_selection import articleSelector
 from parserComponents.link_parser import RssParser
 
@@ -22,45 +24,53 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def testing_menu():
+    db_core = None  # To store the Core DB Component if created
+
     while True:
         print("\nTesting Options:")
         print("1. Delete All Tables")
         print("2. Create All Tables")
         print("3. Delete Table Data")
-        print("4. Create New Listener")
-        print("5. PageRank")
-        print("6. Get Similarity")
-        print("7. Show Table Data")
-        print("8. Return to Main Menu")
+        print("4. Create Core DB Component")
+        print("5. Create New Listener")
+        print("6. PageRank")
+        print("7. Get Similarity")
+        print("8. Show Table Data")
+        print("9. Return to Main Menu")
 
-        choice = input("Enter a number (1-8): ").strip()
+        choice = input("Enter a number (1-9): ").strip()
 
         if choice == "1":
             print("Deleting all tables...")
-            # Call your function to delete all tables here
+            TableDeletion()
         elif choice == "2":
             print("Creating all tables...")
-            # Call your function to create all tables here
+            TableCreation()
         elif choice == "3":
             print("Deleting table data...")
             # Call your function to delete table data here
         elif choice == "4":
-            print("Creating new listener...")
-            # Call your function to create a new listener here
+            print("Creating a Core DB Component...")
+            DatabaseCoreComponent()
         elif choice == "5":
+            print("Creating new listener...")
+            country = input("Enter the Country for listening to events: ")
+            RssParser(country)
+        elif choice == "6":
             print("Running PageRank...")
             # Call your function to run PageRank here
-        elif choice == "6":
+        elif choice == "7":
             print("Getting similarity...")
             # Call your function to get similarity here
-        elif choice == "7":
-            print("Showing table data...")
-            # Call your function to show table data here
         elif choice == "8":
+            print("Showing table data...")
+            ShowTableData()
+        elif choice == "9":
             print("Returning to main menu...\n")
             break
         else:
-            print("Invalid selection. Please enter a number between 1 and 8.")
+            print("Invalid selection. Please enter a number between 1 and 9.")
+
 
 def production_menu():
     while True:

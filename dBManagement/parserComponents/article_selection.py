@@ -65,17 +65,24 @@ class articleSelector(DatabaseCoreComponent):
         self.create_connection()
         cur = self.conn.cursor()
         try:
-            cur.execute(get_article_data, (self.country,))  # Pass country safely
-            rows = cur.fetchall()  # Store the result in self.Articles
-            self.UID = [row[0] for row in rows]  # Set of article_id
-            self.titles = [row[1] for row in rows] # Concatenated titles
+            cur.execute(get_article_data, (self.country,))
+            rows = cur.fetchall()
+
+            if not rows:
+                logging.warning(f"No articles found for country: {self.country}")
+                return 1
+
+            self.UID = [row[0] for row in rows]
+            self.titles = [row[1] for row in rows]
 
         except Exception as error:
-            logging.error("Error while interacting with the database:", error)
+            logging.error(f"Error while interacting with the database: {error}")
         finally:
             if cur:
                 cur.close()
-        self.close_connection()
+            self.close_connection()
+            return 0
+
         
 
     def cosineSimilarity(self):
@@ -114,14 +121,16 @@ class articleSelector(DatabaseCoreComponent):
 
     def perform_analysis(self):
         self.clean()
-        self.get_id_title_data()
-        self.cosineSimilarity()
-        self.zeroOut()
+        exit_code = self.get_id_title_data()
+        if exit_code == 0:
+            self.cosineSimilarity()
+            self.zeroOut()
 
-        self.graph = WeightedGraph()
-        self.graph.convert_matrix_to_graph(self.matrix)
-        self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
-        print(self.graph.return_adjusted_score())
+            self.graph = WeightedGraph()
+            self.graph.convert_matrix_to_graph(self.matrix)
+            self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
+            print(self.graph.return_adjusted_score())
+        
     
     def return_UID(self):
         if self.relevant_article_index:

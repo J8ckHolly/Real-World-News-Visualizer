@@ -62,5 +62,5 @@ class TableDeletion(DatabaseCoreComponent):
 # Example usage (for testing)
 if __name__ == "__main__":
     print("hi")
-    tableDel = TableDeletion
+    tableDel = TableDeletion()
     
