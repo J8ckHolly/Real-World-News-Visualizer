@@ -7,6 +7,7 @@ from dataBaseComponents.core_db_component import DatabaseCoreComponent
 from dataBaseComponents.show_table_data import ShowTableData
 from parserComponents.article_selection import articleSelector
 from parserComponents.link_parser import RssParser
+from data.mainScheduler import mainScheduler
 
 current_working_directory = os.getcwd()
 print(current_working_directory)
@@ -21,6 +22,7 @@ logging.basicConfig(
     ]
 )
 
+logging.getLogger('apscheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 def testing_menu():
@@ -39,7 +41,7 @@ def testing_menu():
         print("9. Run Practice Scheduler")
         print("10. Return to Main Menu")
 
-        choice = input("Enter a number (1-9): ").strip()
+        choice = input("Enter a number (1-10): ").strip()
 
         if choice == "1":
             print("Deleting all tables...")
@@ -68,6 +70,7 @@ def testing_menu():
             ShowTableData()
         elif choice =="9":
             print("Running practice Scheduler")
+            mainScheduler()
         elif choice == "10":
             print("Returning to main menu...\n")
             break
