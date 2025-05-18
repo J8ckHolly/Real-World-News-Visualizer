@@ -17,9 +17,14 @@ Purpose:
     -Pulls all articles from article table and runs the pageranker algorithm
     -Selects the most relevant article
     -Cleans articles if the are expired past 2 days
-    -Need to work on standard deviation
+    -Determines standard deviation
 """
 class articleSelector(DatabaseCoreComponent):
+
+    reassignArticleThreshold = 0
+    zeroOutThreshold = .06
+
+    
     def __init__(self, country):
         super().__init__()
         self.country = country
@@ -29,6 +34,7 @@ class articleSelector(DatabaseCoreComponent):
 
     def clean(self):
         # SQL query to delete articles older than 2 days
+        #
         delete_articles_query = """
             DELETE FROM article
             WHERE country = %s AND time < CURRENT_TIMESTAMP - INTERVAL '2 days'
@@ -57,6 +63,7 @@ class articleSelector(DatabaseCoreComponent):
             self.close_connection()
 
     def get_id_title_data(self):
+        # Makes sure there is data in the article table
         get_article_data = """
             SELECT article_id, title
             FROM article
@@ -84,7 +91,6 @@ class articleSelector(DatabaseCoreComponent):
             return 0
 
         
-
     def cosineSimilarity(self):
         # Step 1: Vectorize the titles using TF-IDF
         vectorizer = TfidfVectorizer(stop_words='english', lowercase=True)
@@ -94,7 +100,7 @@ class articleSelector(DatabaseCoreComponent):
         self.matrix = cosine_similarity(tfidf_matrix)
     
     def zeroOut(self):
-        threshold = .06
+        # Zero's out the data with connections less the desired threshold
         Perfect = 0
         Good = 0
         Dropped = 0
@@ -103,7 +109,7 @@ class articleSelector(DatabaseCoreComponent):
         # Iterate over each row and each value in the row
         for i in range(len(self.matrix)):
             for j in range(len(self.matrix[i])):
-                if self.matrix[i][j] < threshold:
+                if self.matrix[i][j] < self.zeroOutThreshold:
                     self.matrix[i][j] = 0
                     Dropped +=1  
                 if self.matrix[i][j] >= 1:
@@ -120,6 +126,9 @@ class articleSelector(DatabaseCoreComponent):
         print(f"Max Value: {max_value}")
 
     def perform_analysis(self):
+        # First cleans the old data from the article table
+        # If there is data then it will find the relation between articles, zeros out the connection, makes the 
+        # graph, and then runs the pageranking algorithm
         self.clean()
         exit_code = self.get_id_title_data()
         if exit_code == 0:
@@ -128,8 +137,10 @@ class articleSelector(DatabaseCoreComponent):
 
             self.graph = WeightedGraph()
             self.graph.convert_matrix_to_graph(self.matrix)
-            self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
-            print(self.graph.return_adjusted_score())
+            #self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
+            #print(self.graph.return_adjusted_score())
+        else:
+            print(f"There is no data in the article rows for {self.country}")
         
     
     def return_UID(self):
@@ -139,11 +150,14 @@ class articleSelector(DatabaseCoreComponent):
             print("PG not yet run")
             return
     
-    def get_similarity(self, node):
-        pass
+    def get_similarity(self, node): 
+        print(self.reassignArticleThreshold)
 
     def display_graph(self):
         self.graph.display_graph()
+
+    def get_relevant_article_index(self):
+        pass
     
     def populate_pageRanker_table(self):
         insert_pageRanker_data = """

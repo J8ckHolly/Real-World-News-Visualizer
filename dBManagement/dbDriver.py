@@ -34,14 +34,11 @@ def testing_menu():
         print("2. Create All Tables")
         print("3. Delete Table Data")
         print("4. Create Core DB Component")
-        print("5. Create New Listener")
-        print("6. PageRank")
-        print("7. Get Similarity")
-        print("8. Show Table Data")
-        print("9. Run Practice Scheduler")
-        print("10. Return to Main Menu")
+        print("5. Show Table Data")
+        print("6. Enter Scheduler Menu")
+        print("7. Return to Main Menu")
 
-        choice = input("Enter a number (1-10): ").strip()
+        choice = input("Enter a number (1-7): ").strip()
 
         if choice == "1":
             print("Deleting all tables...")
@@ -56,26 +53,18 @@ def testing_menu():
             print("Creating a Core DB Component...")
             DatabaseCoreComponent()
         elif choice == "5":
-            print("Creating new listener...")
-            country = input("Enter the Country for listening to events: ")
-            RssParser(country, True)
-        elif choice == "6":
-            print("Running PageRank...")
-            # Call your function to run PageRank here
-        elif choice == "7":
-            print("Getting similarity...")
-            # Call your function to get similarity here
-        elif choice == "8":
             print("Showing table data...")
             ShowTableData()
-        elif choice =="9":
-            print("Running practice Scheduler")
-            mainScheduler()
-        elif choice == "10":
+        elif choice == "6":
+            print("Entering scheduler menu...")
+            scheduler_menu()
+        elif choice == "7":
             print("Returning to main menu...\n")
             break
         else:
-            print("Invalid selection. Please enter a number between 1 and 9.")
+            print("Invalid selection. Please enter a number between 1 and 7.")
+
+
 
 
 def production_menu():
@@ -98,6 +87,55 @@ def production_menu():
             break
         else:
             print("Invalid selection. Please try again.")
+
+def scheduler_menu():
+    scheduler = mainScheduler()
+    while True:
+        print("\nScheduler Options:")
+        print("1. Initialize country counter")
+        print("2. Print country counter")
+        print("3. Execute scheduler")
+        print("4. Create Object Listener")
+        print("5. Create Article Selector")
+        print("6. Show Priority Pipeline")
+        print("7. Get Article Selection")
+        print("8. Return to testing menu")
+
+        choice = input("Enter a number (1-8): ").strip()
+
+        if choice == "1":
+            print("Initializing country counter...")
+            scheduler.initializeCountryCounter()
+        elif choice == "2":
+            print("Printing country counter...")
+            scheduler.printCountryCounter()
+        elif choice == "3":
+            print("Executing scheduler...")
+            scheduler.executeScheduler()
+            print("Scheduler is now running in the background.")
+        elif choice == "4":
+            print("Creating new listener...")
+            country = input("Enter the Country for listening to events: ")
+            scheduler.createObjectListener(country)
+        elif choice == "5":
+            print("Creating Article Selector...")
+            country = input("Enter the Country for listening to events: ")
+            scheduler.createArticleSelector(country)
+        elif choice == "6":
+            print("Showing Priority Pipeline...")
+            scheduler.printPriorityQuene()
+        elif choice == "7":
+            print("Making Article Selection...")
+            #Have to Edit this
+            scheduler.createArticleSelector()
+        elif choice == "8":
+            print("Returning to testing menu...\n")
+            break
+        else:
+            print("Invalid selection. Please enter a number between 1 and 8.")
+
+
+
 
 def main():
     while True:

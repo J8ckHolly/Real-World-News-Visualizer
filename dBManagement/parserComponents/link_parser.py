@@ -20,11 +20,12 @@ Purpose:
     -Commits the country, link, and date to the database
 """
 class RssParser(DatabaseCoreComponent):
-    def __init__(self, country, dev=False):
+    def __init__(self, country, country_Counter = None, dev=False):
         super().__init__()
         if dev == True:
             self.dev = dev
             print("In Developer Mode")
+        self.country_Counter = country_Counter
         self.country = country
         self.rss_link = f"https://news.google.com/rss/search?q={quote_plus(self.country)}"
         self.get_rss()
@@ -78,6 +79,7 @@ class RssParser(DatabaseCoreComponent):
 
                 # Insert if unique and within the time limit
                 cur.execute(insert_tuple, (ref, entry_time, self.country, cleaned_title))
+                self.country_Counter[self.country] +=1
                 logging.info(f"Link added in {self.country} Parser")
 
             self.conn.commit()

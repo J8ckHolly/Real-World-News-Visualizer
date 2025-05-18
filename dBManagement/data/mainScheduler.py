@@ -2,8 +2,10 @@ import json
 from pathlib import Path
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
+from parserComponents.link_parser import RssParser
+from datetime import datetime, timedelta
+from parserComponents.article_selection import articleSelector
 
 class mainScheduler:
     #Time Constants
@@ -22,26 +24,43 @@ class mainScheduler:
     'classC': 5,
     'classD': 6,
     'classE': 7,
-    'classF': 90    
+    'classF': 8    
     }
+
+    countryCounter = {}
+    articlePriorityStack = []
+
+
     def __init__(self):
+        self.readData()
+        #self.executeScheduler()
+
+    def readData(self):
         # Get the directory where the country.json file is located
         file_path = Path(__file__).parent / 'classCategory.json'
         # Open and read the JSON file
         with open(file_path, "r") as file:
             self.data = json.load(file)
 
+    def initializeCountryCounter(self):
+        countryCounter = {}
         for key in self.data.keys():
-            print(key)
-        self.scheduler = BackgroundScheduler()
-        self.executeScheduler()
+            countries = self.data[key]
+            
+            for country in countries:
+                self.countryCounter[country] = 0
 
-    def printStatement(self, country):
-        print(country)
+    def createObjectListener(self, country):
+        RssParser(country, country_Counter=self.countryCounter, dev=True)
 
-    from datetime import datetime, timedelta
+    def createArticleSelector(self, country):
+        self.articleSelector = articleSelector(country)
+
+    def getArticleSelection(self):
+        pass
 
     def executeScheduler(self):
+        self.scheduler = BackgroundScheduler()
         for key in self.data.keys():
             countries = self.data[key]
             num_countries = len(countries)
@@ -68,6 +87,18 @@ class mainScheduler:
                 #print(f"Scheduled job for {country} to start at {start_time.strftime('%H:%M:%S')} every {period} minutes.")
 
         self.scheduler.start()
+
+    def printCountryCounter(self):
+        try:
+            print(self.countryCounter)
+        except NameError:
+            print("Country Counter hasn't been initialized yet")
+
+    def printStatement(self, country):
+        print(country)
+
+    def printPriorityQuene(self):
+        print(self.articlePriorityStack)
 
             
 
