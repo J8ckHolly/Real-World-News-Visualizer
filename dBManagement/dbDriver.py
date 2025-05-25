@@ -127,7 +127,7 @@ def scheduler_menu():
         elif choice == "7":
             print("Making Article Selection...")
             #Have to Edit this
-            scheduler.createArticleSelector()
+            scheduler.articleSelector.perform_analysis()
         elif choice == "8":
             print("Returning to testing menu...\n")
             break

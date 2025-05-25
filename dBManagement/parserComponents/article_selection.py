@@ -31,10 +31,11 @@ class articleSelector(DatabaseCoreComponent):
         self.titles = []
         self.UID = []
         self.relevant_article_index = None
+        print("Article Selector Created")
 
     def clean(self):
         # SQL query to delete articles older than 2 days
-        #
+        # First should get the most relevant article, then if it is going to get deleted, set the flag to go to pipeline
         delete_articles_query = """
             DELETE FROM article
             WHERE country = %s AND time < CURRENT_TIMESTAMP - INTERVAL '2 days'
@@ -62,8 +63,9 @@ class articleSelector(DatabaseCoreComponent):
                 cur.close()
             self.close_connection()
 
-    def get_id_title_data(self):
+    def get_article_data(self):
         # Makes sure there is data in the article table
+        # Gets the SERIAL UID from the database
         get_article_data = """
             SELECT article_id, title
             FROM article
@@ -71,16 +73,17 @@ class articleSelector(DatabaseCoreComponent):
         """
         self.create_connection()
         cur = self.conn.cursor()
+        success = False
         try:
             cur.execute(get_article_data, (self.country,))
             rows = cur.fetchall()
 
             if not rows:
                 logging.warning(f"No articles found for country: {self.country}")
-                return 1
-
-            self.UID = [row[0] for row in rows]
-            self.titles = [row[1] for row in rows]
+            else:
+                self.UID = [row[0] for row in rows]
+                self.titles = [row[1] for row in rows]
+                success = True
 
         except Exception as error:
             logging.error(f"Error while interacting with the database: {error}")
@@ -88,7 +91,8 @@ class articleSelector(DatabaseCoreComponent):
             if cur:
                 cur.close()
             self.close_connection()
-            return 0
+        
+        return 0 if success else 1
 
         
     def cosineSimilarity(self):
@@ -112,7 +116,7 @@ class articleSelector(DatabaseCoreComponent):
                 if self.matrix[i][j] < self.zeroOutThreshold:
                     self.matrix[i][j] = 0
                     Dropped +=1  
-                if self.matrix[i][j] >= 1:
+                elif self.matrix[i][j] >= 1:
                     Perfect +=1
                 else:
                     self.matrix[i][j] = round(self.matrix[i][j], 6)
@@ -120,6 +124,7 @@ class articleSelector(DatabaseCoreComponent):
                         max_value = self.matrix[i][j]
                         maxIndex = [i,j]
                     Good +=1
+        print("Zero Out Analysis")
         print(f"Perfect: {Perfect}")
         print(f"Good: {Good}")
         print(f"Dropped: {Dropped}")
@@ -130,17 +135,26 @@ class articleSelector(DatabaseCoreComponent):
         # If there is data then it will find the relation between articles, zeros out the connection, makes the 
         # graph, and then runs the pageranking algorithm
         self.clean()
-        exit_code = self.get_id_title_data()
+        exit_code = self.get_article_data()
+        
         if exit_code == 0:
+            #Creating connections and cleaning up
             self.cosineSimilarity()
             self.zeroOut()
-
+            
+            #Making the graph
             self.graph = WeightedGraph()
             self.graph.convert_matrix_to_graph(self.matrix)
-            #self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
-            #print(self.graph.return_adjusted_score())
+
+            # When you make the graph, the matrix you're passing in doesn't automatically assign the uid of the article
+            # Therefore you are getting the index of the most popular article which you reference through the self.UID array
+            self.relevant_article_index = self.UID[int(self.graph.page_ranking_algorithm())]
+
+            # Print Ranking Score
+            print(f"Score is {self.graph.return_adjusted_score()}")
         else:
             print(f"There is no data in the article rows for {self.country}")
+        
         
     
     def return_UID(self):
@@ -150,6 +164,11 @@ class articleSelector(DatabaseCoreComponent):
             print("PG not yet run")
             return
     
+    def get_top_article(self):
+        # Retrieves the most populate article
+        # if not there set the flag to automatically add to pipeline
+        pass
+
     def get_similarity(self, node): 
         print(self.reassignArticleThreshold)
 
