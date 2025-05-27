@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+* {
+    font-family: 'Inter', sans-serif;
+}
+.table {
+    width: 330px;         
+    height: 415px;        
+    background-color: white; 
+    border-radius: 15px;   
+    overflow: hidden;      
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow */
+    border: 2px solid black; /* Adds a black border */
+    position: relative;
+}
+  
+.header {
+    height: 90px;               /* Height of the header */
+    background-color: #caccc5;  /* Grey background for the header */
+    gap: 20px;
+    display: flex;              /* Enable flexbox */
+    align-items: center;        /* Vertically center the children */
+    justify-content: center;    /* Horizontally center the children */
+    font-weight: bold;
+    border-bottom: 2px solid black; /* Only bottom border is black */
+}
+  
+.title {
+    padding: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}
+.content {
+    padding: 0px 20px;   /* 0px for top and bottom, 16px for left and right */
+    font-size: 12px;
+    color: #333;
+    text-align: left;
+}
+
+.circularIcon {
+width: 12px;
+height: 12px;
+}
+
+.pinIcon {
+width: 12px;
+height: 16px;
+}
+
+.topInfo {
+display: flex;
+justify-content: flex-start; /* Ensure content is aligned to the left */
+gap: 8px; /* Adds spacing between leftIcon and rightDescription */
+}
+
+.leftIcon {
+    display: flex;
+    flex-direction: column;  /* Stack the icons vertically */
+    align-items: center;    /* Center the icons horizontally */
+    gap: 6px; /* Adds spacing between leftIcon and rightDescription */
+}
+.headerContent {
+    font-size: 10px;
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove padding */
+    line-height: 1; /* Reduce extra spacing between lines */
+}
+.rightDescription {
+    display: flex;
+    flex-direction: column;  /* Stack the descriptions vertically */
+    gap: 9px; /* Adds spacing between text elements */
+    align-items: flex-start; /* Ensure text aligns to the left */
+    text-align: left; /* Just in case */
+}
+
+.joinedInfo {
+    display: flex;
+    flex-direction: column; /* Stack topInfo and bottomInfo vertically */
+    gap: 6px; /* Adds a gap between topInfo and bottomInfo */
+    color: black;
+}
+
+.time {
+    display: flex;
+    flex-direction: column;  /* Stack the descriptions vertically */
+    gap: 0; /* No gap between text elements */
+    align-items: flex-start; /* Align text to the left */
+    text-align: left; /* Align text to the left */
+    margin: 0; /* Remove margin */
+    padding: 0; /* Remove padding */
+}
+
+.bottomInfo {
+    display: flex;
+    justify-content: flex-start; /* Ensure content is aligned to the left */
+    gap: 8px; /* Adds spacing between leftIcon and rightDescription */
+}
+.mainFlag {
+    width: 120px;
+    height: 70px;
+    border-radius: 15px;  /* Round the corners */
+    overflow: hidden; /* Hide any overflow, ensuring rounded corners */
+}
+.extendedFlag {
+    width: 60px;
+    height: 40px;
+}
+
+.flags {
+    display: flex;              /* Use flexbox for layout */
+    justify-content: center; /* Align items to the left (you can change it to space-between, center, etc.) */
+    align-items: center;        /* Vertically align items to the center */
+    gap: 18px;                  /* Add some space between the flags */
+    border-top: 1px solid black; /* Horizontal line above the flags */
+    padding-top: 10px; /* Add some space between the line and the flags */
+    
+}
+
+.gateway {
+    position: absolute;
+    bottom: 10px; /* Position the flags 10px from the bottom */
+    left: 50%;
+    transform: translateX(-50%); /* Center the flags horizontally */
+    width: 80%; /* Ensure the flags take up full width of the table */
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove padding */
+    line-height: 1; /* Reduce extra spacing between lines */
+    color: #333
+}
+
+.related {
+    display: block;              /* Makes sure it's treated as a block-level element */
+    font-size: 10px;              /* Adjust font size */
+    width: 100%;                  /* Make the text span the full width */
+    text-align: left;             /* Align the text to the left */ 
+}
+
+.sphere-flag {
+    display: inline-block;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+  }
+
+.sphere-flag::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: inherit;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }

@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 import psycopg2
 import time
 import logging
@@ -38,8 +39,13 @@ class DatabaseCoreComponent():
 
     def load_db_password(self):
         try:
-            file_path = r'.\webscraping\.env'
-            load_dotenv(dotenv_path=file_path)
+            #file_path = r'.\webscraping\.env'
+            #load_dotenv(dotenv_path=file_path)
+
+            base_path = Path(__file__).resolve().parent.parent
+            env_path = base_path / '.env'
+            load_dotenv(dotenv_path=env_path)
+
             POSTGRESQL_PASSWORD = os.getenv('POSTGRESQL_PASSWORD')
             logging.info("Successfully loaded password in DatabaseCC")
             if POSTGRESQL_PASSWORD is None:
@@ -47,8 +53,8 @@ class DatabaseCoreComponent():
                 raise ValueError("POSTGRESQL_PASSWORD environment variable is not found")
             return POSTGRESQL_PASSWORD
         except FileNotFoundError:
-            logging.error(f"Error: The file at {file_path} was not found.")
-            print(f"Error: The file at {file_path} was not found.")
+            logging.error(f"Error: The file at {base_path} was not found.")
+            print(f"Error: The file at {base_path} was not found.")
         except ValueError as ve:
             logging.error(f"Error: In Loading password error")
             print(f"Error: {ve}")

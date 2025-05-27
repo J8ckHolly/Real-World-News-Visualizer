@@ -126,18 +126,23 @@ class WeightedGraph:
 
         #Right now do it the slow way of incrementing through and seeing what the highest value is
         #In future optomise this
-        max_value = max(self.nodes, key=lambda node: self.nodes[node].visits)
-        print("The winner is: "+ max_value)
-        self.adjusted_score(self.nodes[max_value], iterations)
-        return max_value
+        most_popular_article = max(self.nodes, key=lambda node: self.nodes[node].visits)
+        print("The winner is: "+ most_popular_article)
+        self.adjusted_score(self.nodes[most_popular_article], iterations)
+        return most_popular_article
         
     def adjusted_score(self, Node, iterations):
+        #Iteration might need to be changed for how many nodes there are?
+        #Revisit the scoring
         normalizedScore = Node.visits/iterations
         self.adjusted_score_value = normalizedScore * math.log(len(self.nodes)+1)
 
     def return_adjusted_score(self):
         print(self.adjusted_score_value)
         return self.adjusted_score_value
+    
+    def return_correlation(self):
+        pass
     
     def display_graph(self):
         if (not self.try_graph):

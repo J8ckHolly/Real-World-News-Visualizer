@@ -1,8 +1,9 @@
-from core_db_component import DatabaseCoreComponent
+from dataBaseComponents.core_db_component import DatabaseCoreComponent
 import datetime
 from datetime import datetime
 import feedparser
 import re
+from urllib.parse import quote_plus
 import logging
 
 """
@@ -19,12 +20,17 @@ Purpose:
     -Commits the country, link, and date to the database
 """
 class RssParser(DatabaseCoreComponent):
-    def __init__(self, country):
+    def __init__(self, country, country_Counter = None, dev=False):
         super().__init__()
+        if dev == True:
+            self.dev = dev
+            print("In Developer Mode")
+        self.country_Counter = country_Counter
         self.country = country
-        self.rss_link = f"https://news.google.com/rss/search?q={self.country}"
+        self.rss_link = f"https://news.google.com/rss/search?q={quote_plus(self.country)}"
         self.get_rss()
         logging.info(f"{self.country} Parser Created Successfully")
+        self.insert_links()
 
     def get_rss(self):
         self.feed = feedparser.parse(self.rss_link)
@@ -35,7 +41,7 @@ class RssParser(DatabaseCoreComponent):
     def convert_to_timestamp(self,time_published):
         return datetime.strptime(time_published, "%a, %d %b %Y %H:%M:%S GMT")
     
-    def insert_entry(self):
+    def insert_links(self):
         insert_tuple = """
             INSERT INTO article (ref, time, country, Title)
             VALUES (%s, %s, %s, %s)
@@ -73,6 +79,7 @@ class RssParser(DatabaseCoreComponent):
 
                 # Insert if unique and within the time limit
                 cur.execute(insert_tuple, (ref, entry_time, self.country, cleaned_title))
+                self.country_Counter[self.country] +=1
                 logging.info(f"Link added in {self.country} Parser")
 
             self.conn.commit()
@@ -102,4 +109,7 @@ class RssParser(DatabaseCoreComponent):
 
 
 
-    
+# Example usage (for testing)
+if __name__ == "__main__":
+    print("Running Locally")
+    country = "United States of America"

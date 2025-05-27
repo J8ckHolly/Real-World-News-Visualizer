@@ -20,11 +20,10 @@ import ThreeMesh from '@/components/three-mesh';
 import { CloudMesh } from '@/components/three-cloud-mesh';
 import { ConfirmationHistoryTable } from '@/components/confirmation-history-table'; //Eventually -Understand
 import { useConfirmations } from '@/providers/confirmation-provider'; //Eventually - Understand
-import { Vector3 } from 'three';
-import { Button } from '@/components/ui/button';
-import { Rocket, Eye, Globe } from 'lucide-react'; // Understand
 import { APP_CONFIG } from '@/constants/config'; //Understand - Keep
 import { latLongToVector3 } from './network-arc';
+import TimeDisplay from './Timer';
+import Table from './Table';
 
 const SLERPZOOM = (start: THREE.Vector3, end: THREE.Vector3, t: number): THREE.Vector3 => {
   const startNormal = start.clone().normalize();
@@ -288,9 +287,9 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
     <div className="relative w-screen h-screen">
       <div className="absolute top-1 md:top-4 left-4 md:left-10 z-10 flex-col select-none">
         <span className="text-[30px] md:text-[40px] font-thin font-sans text-[#209ce9]">
-          ӾNO {/*This is where the title is*/}
+          RTN {/*This is where the title is*/}
         </span> 
-        <span className="text-[30px] md:text-[40px] text-gray-200">Hub</span>
+        <span className="text-[30px] md:text-[40px] text-gray-200">Vizualizer</span>
       </div>
 
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2"> {/*Get ride of */}
@@ -299,6 +298,15 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
         cameraState={cameraState}
         isFocused={isFocused}/>
       </div> {/*Get ride of */}
+
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+        <TimeDisplay />
+      </div>
+
+      <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-30">
+        <Table activeUid={16} 
+        isFocused={isFocused}/>
+      </div>
 
       <Canvas
         camera={cameraSettings}
@@ -347,7 +355,7 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
           </div>
         )}
       </div>
-      {/* Node Info */}
+      {/* Node Info 
       <div className="absolute bottom-20 left-4 z-10">
         {cameraRef.current && (
           <div className="bg-transparent text-white p-4 rounded-lg shadow-lg max-w-sm">
@@ -355,10 +363,10 @@ const ThreeSceneClient: React.FC<ThreeSceneClientProps> = ({
             <p>X: {cameraRef.current.position.x}</p>
             <p>Y: {cameraRef.current.position.y}</p>
             <p>Z: {cameraRef.current.position.z}</p>
-            {/*<p>{hoveredNode.latitude}</p>*/}
           </div>
         )}
       </div>
+      */}
       
       
     </div>

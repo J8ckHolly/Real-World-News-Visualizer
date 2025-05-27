@@ -1,0 +1,9 @@
+.flag-icon {
+    display: inline-block; /* Ensure it's treated like a block element */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for background color and shadow */
+  }
+  
+.flag-icon:hover {
+  background-color: rgba(126, 200, 227, 0.5); /* Lighter blue background on hover */
+  box-shadow: 0 0 0 8px rgba(126, 200, 227, 0.5); /* Same lighter blue "glow" effect around the flag */
+}

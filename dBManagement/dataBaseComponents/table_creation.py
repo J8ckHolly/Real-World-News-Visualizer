@@ -1,4 +1,4 @@
-from core_db_component import DatabaseCoreComponent
+from .core_db_component import DatabaseCoreComponent
 import logging
 """
 Filename: table_creation.py
@@ -8,8 +8,12 @@ Author: Jack Holly
 Date Created: 2025-01-24
 
 Purpose:
-    -Inherits all attributes of the core_db_component class
-    -creates all tables for the system
+    -
+    -
+    -
+    -@Inputs: None
+    -@utputs: None
+    -@Action: Creates all tables for the database
 """
 class TableCreation(DatabaseCoreComponent):
     
