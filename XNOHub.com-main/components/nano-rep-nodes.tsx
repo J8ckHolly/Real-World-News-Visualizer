@@ -171,11 +171,12 @@ const NanoRepNodes: React.FC<NanoRepNodesProps> = React.memo(
             onClick={handleNodeClick}
           />
         ))}
-
+        {/*
         <MultipleArcs
         startNode={representativeData}
         endNodes={myNodes}
         earthRadius={earthRadiusRef.current}/>
+        */}
 
       </group>
     );
