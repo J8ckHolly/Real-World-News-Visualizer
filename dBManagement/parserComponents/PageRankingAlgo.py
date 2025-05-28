@@ -142,8 +142,19 @@ class WeightedGraph:
         return self.adjusted_score_value
     
     def determine_correlation(self, nodeA, nodeB):
-        pass
-        # Get Correlation method from PageRankerAlgo
+        """
+        Returns the weight of the edge between nodeA and nodeB if it exists,
+        otherwise returns 0 or None to indicate no direct connection.
+        """
+        if nodeA not in self.nodes or nodeB not in self.nodes:
+            return None  # Or raise an exception if preferred
+
+        from_node = self.nodes[nodeA]
+        for neighbor, weight in from_node.get_edges():
+            if neighbor.return_name() == nodeB:
+                return weight
+
+        return 0  # No edge found
     
     def display_graph(self):
         if (not self.try_graph):
