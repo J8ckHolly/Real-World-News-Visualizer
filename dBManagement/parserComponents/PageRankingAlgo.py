@@ -141,8 +141,9 @@ class WeightedGraph:
         print(self.adjusted_score_value)
         return self.adjusted_score_value
     
-    def return_correlation(self):
+    def determine_correlation(self, nodeA, nodeB):
         pass
+        # Get Correlation method from PageRankerAlgo
     
     def display_graph(self):
         if (not self.try_graph):

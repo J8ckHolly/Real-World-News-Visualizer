@@ -155,6 +155,14 @@ class articleSelector(DatabaseCoreComponent):
         else:
             print(f"There is no data in the article rows for {self.country}")
         
+    def get_correlation(self, uidA, uidB):
+        pass
+        # Index first UID
+        nodeA = None
+        # Index second UID
+        nodeB = None
+        # Get Correlation method from PageRankerAlgo
+        self.graph.determine_correlation(nodeA, nodeB)
         
     
     def return_UID(self):

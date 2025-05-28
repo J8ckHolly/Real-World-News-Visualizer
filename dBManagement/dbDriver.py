@@ -6,6 +6,7 @@ from dataBaseComponents.table_creation import TableCreation
 from dataBaseComponents.core_db_component import DatabaseCoreComponent
 from dataBaseComponents.show_table_data import ShowTableData
 from parserComponents.article_selection import articleSelector
+from apiComponents.gpt_classes import gptDescriptor, fireCrawl
 from parserComponents.link_parser import RssParser
 from data.mainScheduler import mainScheduler
 
@@ -36,9 +37,10 @@ def testing_menu():
         print("4. Create Core DB Component")
         print("5. Show Table Data")
         print("6. Enter Scheduler Menu")
-        print("7. Return to Main Menu")
+        print("7. Enter API Menu")
+        print("8. Return to Main Menu")
 
-        choice = input("Enter a number (1-7): ").strip()
+        choice = input("Enter a number (1-8): ").strip()
 
         if choice == "1":
             print("Deleting all tables...")
@@ -59,12 +61,13 @@ def testing_menu():
             print("Entering scheduler menu...")
             scheduler_menu()
         elif choice == "7":
+            print("Entering API menu...")
+            api_menu()
+        elif choice == "8":
             print("Returning to main menu...\n")
             break
         else:
-            print("Invalid selection. Please enter a number between 1 and 7.")
-
-
+            print("Invalid selection. Please enter a number between 1 and 8.")
 
 
 def production_menu():
@@ -135,7 +138,50 @@ def scheduler_menu():
             print("Invalid selection. Please enter a number between 1 and 8.")
 
 
+def api_menu():
+    while True:
+        print("\nAPI Options:")
+        print("1. Get article information")
+        print("2. Get real URL")
+        print("3. Get Markdown")
+        print("4. Load Firecrawl API")
+        print("5. Load OpenAI password")
+        print("6. Get relevant info")
+        print("7. Check relevant info")
+        print("8. Get description via OpenAI")
+        print("9. Return to testing menu")
 
+        choice = input("Enter a number (1-9): ").strip()
+
+        if choice == "1":
+            print("Getting article information...")
+            # Add logic to get article information
+        elif choice == "2":
+            print("Getting real URL...")
+            # Add logic to get the real URL
+        elif choice == "3":
+            print("Getting Markdown...")
+            # Add logic to get Markdown content
+        elif choice == "4":
+            print("Loading Firecrawl API...")
+            # Add logic to load Firecrawl API
+        elif choice == "5":
+            print("Loading OpenAI password...")
+            # Add logic to load OpenAI password
+        elif choice == "6":
+            print("Getting relevant info...")
+            # Add logic to get relevant information
+        elif choice == "7":
+            print("Checking relevant info...")
+            # Add logic to check relevant information
+        elif choice == "8":
+            print("Getting description via OpenAI...")
+            # Add logic to get description using OpenAI
+        elif choice == "9":
+            print("Returning to testing menu...\n")
+            break
+        else:
+            print("Invalid selection. Please enter a number between 1 and 9.")
 
 def main():
     while True:
