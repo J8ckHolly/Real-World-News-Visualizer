@@ -157,12 +157,13 @@ class articleSelector(DatabaseCoreComponent):
         
     def get_correlation(self, uidA, uidB):
         pass
-        # Index first UID
-        nodeA = None
-        # Index second UID
-        nodeB = None
-        # Get Correlation method from PageRankerAlgo
-        self.graph.determine_correlation(nodeA, nodeB)
+        if self.graph is not None:
+            # Index first UID
+            nodeA = None
+            # Index second UID
+            nodeB = None
+            # Get Correlation method from PageRankerAlgo
+            return self.graph.determine_correlation(nodeA, nodeB)
         
     
     def return_UID(self):
