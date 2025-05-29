@@ -1,5 +1,5 @@
 🌍 Real-World News Globe
-This project visualizes real-world news on an interactive 3D globe. The frontend, built with Three.js, TypeScript, and RxJS, allows users to explore global news stories spatially and temporally.
+This project visualizes real-world news on an interactive 3D globe. The frontend, built with Three.js, TypeScript, and RxJS, allows users to explore breaking global news stories.
 
 ![image](https://github.com/user-attachments/assets/935a4b71-4306-4561-9080-a0d46af915ee)
 
